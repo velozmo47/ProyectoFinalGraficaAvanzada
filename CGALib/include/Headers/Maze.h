@@ -28,6 +28,7 @@
 
 #include "Headers/Colisiones.h"
 #include "Headers/Model.h"
+#include "Headers/Shader.h"
 #include <iostream>
 #include <stack>
 using namespace std;
@@ -58,9 +59,11 @@ private:
 
 public:
 	Maze(int m_nMazeWidth, int m_nMazeHeight, int m_nPathWidth, float cellSize);
-	bool OnUserUpdate(Model& modelNodo, Model& modelPared, std::map<std::string, std::tuple<AbstractModel::OBB, glm::mat4, glm::mat4> >& collidersOBB);
+	bool OnUserUpdate(Model & modelNodo, Model & modelPared, Model & modelAntorcha, std::map<std::string, std::tuple<AbstractModel::OBB, glm::mat4, glm::mat4>>& collidersOBB);
 	void CrearCollider(Model& modelo, string nombre, glm::mat4 modelMatrix, std::map<std::string, std::tuple<AbstractModel::OBB, glm::mat4, glm::mat4> >& collidersOBB);
 	glm::mat4 DibujarModelo(Model& modelo, float rotacion, glm::vec3 posicion);
+	glm::vec3 SetLamp(int i);
+	int SpotTotal();
 };
 
 #endif /* MAZE_H */

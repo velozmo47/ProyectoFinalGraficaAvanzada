@@ -1,5 +1,23 @@
 #include "Headers/Maze.h"
 #include "Headers/Colisiones.h"
+#include "Headers/Shader.h"
+
+
+Shader shaderMulLighting;
+//Shader para el terreno
+Shader shaderTerrain;
+
+std::vector<glm::vec3> lampPosition = { glm::vec3(0,0,0)};
+
+glm::vec3 Maze:: SetLamp(int i) {
+	return lampPosition[i];
+}
+
+
+
+int Maze::SpotTotal() {
+	return lampPosition.size();
+}
 
 Maze::Maze(int m_nMazeWidth, int m_nMazeHeight, int m_nPathWidth, float cellSize)
 {
@@ -16,10 +34,12 @@ Maze::Maze(int m_nMazeWidth, int m_nMazeHeight, int m_nPathWidth, float cellSize
 	m_stack.push(make_pair(x, y));
 	m_maze[y * m_nMazeWidth + x] = CELL_VISITED;
 	m_nVisitedCells = 1;
+	
 }
 
-bool Maze::OnUserUpdate(Model& modelNodo, Model& modelPared, std::map<std::string, std::tuple<AbstractModel::OBB, glm::mat4, glm::mat4>>& collidersOBB)
+bool Maze::OnUserUpdate(Model& modelNodo, Model& modelPared, Model & modelAntorcha, std::map<std::string, std::tuple<AbstractModel::OBB, glm::mat4, glm::mat4>>& collidersOBB)
 {
+	int i = 0;
 	// Little lambda function to calculate index in a readable way
 	auto offset = [&](int x, int y)
 	{
@@ -50,7 +70,6 @@ bool Maze::OnUserUpdate(Model& modelNodo, Model& modelPared, std::map<std::strin
 		{
 			// Choose one available neighbour at random
 			int next_cell_dir = neighbours[rand() % neighbours.size()];
-
 			// Create a path between the neighbour and the current cell
 			switch (next_cell_dir)
 			{
@@ -58,6 +77,7 @@ bool Maze::OnUserUpdate(Model& modelNodo, Model& modelPared, std::map<std::strin
 				m_maze[offset(0, -1)] |= CELL_VISITED | CELL_PATH_S;
 				m_maze[offset(0, 0)] |= CELL_PATH_N;
 				m_stack.push(make_pair((m_stack.top().first + 0), (m_stack.top().second - 1)));
+				lampPosition.resize(lampPosition.size() + 1);
 				break;
 
 			case 1: // East
@@ -110,6 +130,12 @@ bool Maze::OnUserUpdate(Model& modelNodo, Model& modelPared, std::map<std::strin
 			if (bloqueoNorte)
 			{
 				modelMatrix = DibujarModelo(modelPared, 0.0f, glm::vec3(xPos, 0, yPos));
+				DibujarModelo(modelAntorcha, 180.0f, glm::vec3(xPos, 0, yPos-3.6));
+				lampPosition[i] = glm::vec3(xPos, 2.0, yPos - 3.4);
+				i++;
+				if (i >= lampPosition.size()) {
+					i = 0;
+				}
 				CrearCollider(modelPared, "ParedNorte " + std::to_string(x) + " " + std::to_string(y), modelMatrix, collidersOBB);
 			}
 			else
@@ -148,6 +174,7 @@ bool Maze::OnUserUpdate(Model& modelNodo, Model& modelPared, std::map<std::strin
 			if (bloqueoEste)
 			{
 				modelMatrix = DibujarModelo(modelPared, -90.0f, glm::vec3(xPos, 0, yPos));
+
 				CrearCollider(modelPared, "ParedEste " + std::to_string(x) + " " + std::to_string(y), modelMatrix, collidersOBB);
 			}
 
@@ -171,6 +198,7 @@ glm::mat4 Maze::DibujarModelo(Model& modelo, float rotacion , glm::vec3 posicion
 
 	return modelMatrix;
 }
+
 
 void Maze::CrearCollider(Model& modelo, string nombre, glm::mat4 modelMatrix, std::map<std::string, std::tuple<AbstractModel::OBB, glm::mat4, glm::mat4> >& collidersOBB)
 {
