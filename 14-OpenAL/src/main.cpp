@@ -65,6 +65,8 @@ Shader shaderTerrain;
 std::shared_ptr<Camera> camera(new ThirdPersonCamera());
 float distanceFromTarget = 2.0;
 float distanceFromTargetOffset;
+float Ghost=3.0f;
+float rotGhost = 0.0f;
 
 Sphere skyboxSphere(20, 20);
 Box boxCollider;
@@ -81,6 +83,7 @@ Model modelNodo;
 Model modelEsfera;
 Model modelPared;
 Model modelAntorcha;
+Model modelGhost;
 
 Maze maze(5, 5, 1, 8.2f);
 float elapsedTime;
@@ -107,9 +110,11 @@ std::string fileNames[6] = { "../Textures/skybox1/1.png",
 bool exitApp = false;
 int lastMousePosX, offsetX = 0;
 int lastMousePosY, offsetY = 0;
+int GhostStates = 0;
 
 // Model matrix definitions
 glm::mat4 modelMatrixGirl = glm::mat4(1.0f);
+glm::mat4 modelMatrixGhost = glm::mat4(1.0f);
 glm::vec3 targetOffset = glm::vec3(-0.35f, 1.5f, 0);
 
 int animationIndex = 0;
@@ -244,6 +249,10 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 
 	modelAntorcha.loadModel("../models/ProyectoFinal/Antorcha.obj");
 	modelAntorcha.setShader(&shaderMulLighting);
+
+
+	modelGhost.loadModel("../models/ProyectoFinal/ghost.obj");
+	modelGhost.setShader(&shaderMulLighting);
 
 	camera->setPosition(glm::vec3(0.0, 0.0, 10.0));
 	camera->setDistanceFromTarget(distanceFromTarget);
@@ -475,6 +484,7 @@ void destroy() {
 	modelPared.destroy();
 	modelEsfera.destroy();
 	modelAntorcha.destroy();
+	modelGhost.destroy();
 
 	// Textures Delete
 	glBindTexture(GL_TEXTURE_2D, 0);
@@ -766,7 +776,32 @@ void applicationLoop() {
 		 // Forze to enable the unit texture to 0 always ----------------- IMPORTANT
 		glActiveTexture(GL_TEXTURE0);
 
-		// Render the lamps
+		// Render the Ghost
+		modelMatrixGhost[3][1] = terrain.getHeightTerrain(modelMatrixGhost[3][0], modelMatrixGhost[3][2]);
+		glm::mat4 modelMatrixGhostBody = glm::mat4(modelMatrixGhost);
+		modelMatrixGhostBody = glm::rotate(modelMatrixGhostBody, glm::radians(rotGhost), glm::vec3(0.0, 1.0, 0.0));
+		modelMatrixGhostBody = glm::translate(modelMatrixGhostBody, glm::vec3(0.0, 2.0, Ghost));
+		modelMatrixGhostBody = glm::scale(modelMatrixGhostBody, glm::vec3(0.5, 0.5, 0.5));
+		modelGhost.render(modelMatrixGhostBody);
+
+		switch (GhostStates) {
+		case 0:
+			rotGhost =0;
+			Ghost= Ghost+0.2f;
+			if (Ghost > 25){
+				GhostStates = 1;
+				rotGhost = 180;
+			}
+			break;
+
+		case 1:
+			Ghost= Ghost- 0.2f;
+			if (Ghost < 5) {
+				GhostStates = 0;
+			}
+			break;
+
+		}
 		
 		// Model Girl
 		modelMatrixGirl[3][1] = terrain.getHeightTerrain(modelMatrixGirl[3][0], modelMatrixGirl[3][2]);
