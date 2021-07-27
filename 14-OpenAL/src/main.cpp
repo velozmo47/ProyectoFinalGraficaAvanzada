@@ -244,6 +244,7 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	modelPared.setShader(&shaderMulLighting);
 
 	// Girl
+	//girlModelAnimate.loadModel("../models/ProyectoFinal/Guard.fbx");
 	girlModelAnimate.loadModel("../models/Practica2_obj/Girl.fbx");
 	girlModelAnimate.setShader(&shaderMulLighting);
 
@@ -607,11 +608,13 @@ bool processInput(bool continueApplication) {
 		}
 		else
 		{
+			//girlModelAnimate.setAnimationIndex(4);
 			girlModelAnimate.setAnimationIndex(1);
 		}
 	}
 	else
 	{
+		//girlModelAnimate.setAnimationIndex(4);
 		girlModelAnimate.setAnimationIndex(1);
 	}
 
