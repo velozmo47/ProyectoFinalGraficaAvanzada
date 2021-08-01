@@ -44,7 +44,9 @@
 #include "Headers/Colisiones.h"
 
 // Maze
-#include "Headers/Maze.h"
+#include "../Include/Maze.h"
+#include "../Include/Collectable.h"
+#include "../Include/GameSystem.h"
 
 #define ARRAY_SIZE_IN_ELEMENTS(a) (sizeof(a)/sizeof(a[0]))
 
@@ -72,7 +74,6 @@ Sphere skyboxSphere(20, 20);
 Box boxCollider;
 Sphere sphereCollider(10, 10);
 Cylinder cylinderRay(10, 10, 0.05, 0.05);
-
 std::vector<glm::vec3> lampPosition{};
 
 // Girl
@@ -85,8 +86,17 @@ Model modelPared;
 Model modelAntorcha;
 Model modelGhost;
 
-Maze maze(5, 5, 1, 8.2f);
+Maze maze(5, 5, 8.2f);
 float elapsedTime;
+
+std::vector<Collectable> collectables = {
+	Collectable(&modelEsfera, glm::vec3(2 * 8.2f, 2, 2 * 8.2f)),
+	Collectable(&modelEsfera, glm::vec3(4 * 8.2f, 2, 0)),
+	Collectable(&modelEsfera, glm::vec3(0, 2, 4 * 8.2f)),
+	Collectable(&modelEsfera, glm::vec3(4 * 8.2f, 2, 4 * 8.2f))
+};
+
+GameSystem gameSystem = GameSystem();
 
 GLuint textureCespedID, textureWallID, textureWindowID, textureHighwayID, textureLandingPadID;
 GLuint textureTerrainBackgroundID, textureTerrainRID, textureTerrainGID, textureTerrainBID, textureTerrainBlendMapID;
@@ -134,6 +144,7 @@ double startTimeJump = 0;
 
 // Colliders
 std::map<std::string, std::tuple<AbstractModel::OBB, glm::mat4, glm::mat4> > collidersOBB;
+std::map<std::string, std::tuple<AbstractModel::OBB, glm::mat4, glm::mat4> > collectablesOBB;
 std::map<std::string, std::tuple<AbstractModel::SBB, glm::mat4, glm::mat4> > collidersSBB;
 
 // Se definen todos las funciones.
@@ -587,19 +598,19 @@ bool processInput(bool continueApplication) {
 	{
 		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 		{
-			modelMatrixGirl = glm::rotate(modelMatrixGirl, 0.08f, glm::vec3(0, 1, 0));
+			modelMatrixGirl = glm::rotate(modelMatrixGirl, 5.0f * (float) deltaTime, glm::vec3(0, 1, 0));
 		}
 		else if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 		{
-			modelMatrixGirl = glm::rotate(modelMatrixGirl, -0.08f, glm::vec3(0, 1, 0));
+			modelMatrixGirl = glm::rotate(modelMatrixGirl, -5.0f * (float) deltaTime, glm::vec3(0, 1, 0));
 		}
 		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 		{
-			modelMatrixGirl = glm::translate(modelMatrixGirl, glm::vec3(0.0, 0.0, 0.3));
+			modelMatrixGirl = glm::translate(modelMatrixGirl, glm::vec3(0.0, 0.0, 7.5) * (float) deltaTime);
 		}
 		else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
 		{
-			modelMatrixGirl = glm::translate(modelMatrixGirl, glm::vec3(0.0, 0.0, -0.3));
+			modelMatrixGirl = glm::translate(modelMatrixGirl, glm::vec3(0.0, 0.0, -7.5) * (float) deltaTime);
 		}
 
 		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
@@ -639,7 +650,7 @@ void applicationLoop() {
 			continue;
 		}
 		lastTime = currTime;
-		TimeManager::Instance().CalculateFrameRate(false);
+		TimeManager::Instance().CalculateFrameRate(true);
 		deltaTime = TimeManager::Instance().DeltaTime;
 		psi = processInput(true);
 
@@ -694,7 +705,7 @@ void applicationLoop() {
 		 * Propiedades Luz direccional
 		 *******************************************/
 		shaderMulLighting.setVectorFloat3("viewPos", glm::value_ptr(camera->getPosition()));
-		shaderMulLighting.setVectorFloat3("directionalLight.light.ambient", glm::value_ptr(glm::vec3(0.05)));
+		shaderMulLighting.setVectorFloat3("directionalLight.light.ambient", glm::value_ptr(glm::vec3(0.2)));
 		shaderMulLighting.setVectorFloat3("directionalLight.light.diffuse", glm::value_ptr(glm::vec3(0.05)));
 		shaderMulLighting.setVectorFloat3("directionalLight.light.specular", glm::value_ptr(glm::vec3(.01)));
 		shaderMulLighting.setVectorFloat3("directionalLight.direction", glm::value_ptr(glm::vec3(-1.0, 0.0, 0.0)));
@@ -702,9 +713,9 @@ void applicationLoop() {
 		/*******************************************
 		 * Propiedades Luz direccional Terrain
 		 *******************************************/
-		
+
 		shaderTerrain.setVectorFloat3("viewPos", glm::value_ptr(camera->getPosition()));
-		shaderTerrain.setVectorFloat3("directionalLight.light.ambient", glm::value_ptr(glm::vec3(0.05)));
+		shaderTerrain.setVectorFloat3("directionalLight.light.ambient", glm::value_ptr(glm::vec3(0.2)));
 		shaderTerrain.setVectorFloat3("directionalLight.light.diffuse", glm::value_ptr(glm::vec3(0.05)));
 		shaderTerrain.setVectorFloat3("directionalLight.light.specular", glm::value_ptr(glm::vec3(0.01)));
 		shaderTerrain.setVectorFloat3("directionalLight.direction", glm::value_ptr(glm::vec3(-1.0, 0.0, 0.0)));
@@ -742,9 +753,9 @@ void applicationLoop() {
 		 * Propiedades PointLights
 		 *******************************************/
 
-		/*******************************************
-		 * Terrain Cesped
-		 *******************************************/
+		 /*******************************************
+		  * Terrain Cesped
+		  *******************************************/
 		glm::mat4 modelCesped = glm::mat4(1.0);
 		modelCesped = glm::translate(modelCesped, glm::vec3(0.0, 0.0, 0.0));
 		modelCesped = glm::scale(modelCesped, glm::vec3(200.0, 0.001, 200.0));
@@ -789,23 +800,23 @@ void applicationLoop() {
 
 		switch (GhostStates) {
 		case 0:
-			rotGhost =0;
-			Ghost= Ghost+0.2f;
-			if (Ghost > 25){
+			rotGhost = 0;
+			Ghost = Ghost + 0.2f;
+			if (Ghost > 25) {
 				GhostStates = 1;
 				rotGhost = 180;
 			}
 			break;
 
 		case 1:
-			Ghost= Ghost- 0.2f;
+			Ghost = Ghost - 0.2f;
 			if (Ghost < 5) {
 				GhostStates = 0;
 			}
 			break;
 
 		}
-		
+
 		// Model Girl
 		modelMatrixGirl[3][1] = terrain.getHeightTerrain(modelMatrixGirl[3][0], modelMatrixGirl[3][2]);
 		glm::mat4 modelMatrixGirlBody = glm::mat4(modelMatrixGirl);
@@ -849,9 +860,9 @@ void applicationLoop() {
 		 * Creacion de colliders
 		 * IMPORTANT do this before interpolations
 		 *******************************************/
-		
 
-		// Colision de la camara, no se ve porque la cámara está dentro de la esfera
+
+		 // Colision de la camara, no se ve porque la cámara está dentro de la esfera
 		AbstractModel::SBB cameraCollider;
 		glm::mat4 modelMatrixColliderCamera = glm::mat4(1.0);
 		modelMatrixColliderCamera[3] = glm::vec4(glm::vec3(modelMatrixGirl[3]) + glm::vec3(modelMatrixGirl[0]) * targetOffset.x + glm::vec3(modelMatrixGirl[1]) * targetOffset.y + camera->getFront() * (-distanceFromTarget + 1), 1);
@@ -882,31 +893,30 @@ void applicationLoop() {
 		girlCollider.e = girlModelAnimate.getObb().e * glm::vec3(0.005, 0.015, 0.01) * glm::vec3(0.785, 0.785, 0.785);
 		addOrUpdateColliders(collidersOBB, "girl", girlCollider, modelMatrixGirl);
 
+		maze.DisplayMaze(modelNodo, modelPared, modelAntorcha, collidersOBB);
+		gameSystem.UpdateCollectables(collectables, girlCollider);
+		totalSpot = maze.GetTorchPositions().size();
 
-		maze.OnUserUpdate(modelNodo, modelPared,modelAntorcha, collidersOBB);
-		totalSpot=maze.SpotTotal();
-		lampPosition.resize(totalSpot);
-		for (int i = 0; i < totalSpot; i++){
-			lampPosition[i] = maze.SetLamp(i);
-		}
-		shaderMulLighting.setInt("pointLightCount",totalSpot);
-		shaderTerrain.setInt("pointLightCount", totalSpot); 
-		for (int i = 0; i < lampPosition.size(); i++) {
-			shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.ambient", glm::value_ptr(glm::vec3(0.03, 0.03, 0.001)));
-			shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.diffuse", glm::value_ptr(glm::vec3(0.03, 0.03, 0.001)));
-			shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.specular", glm::value_ptr(glm::vec3(0.08, 0.08, 0.08)));
-			shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].position", glm::value_ptr(lampPosition[i]));
-			shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].constant", 0.2);
-			shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].linear", 0.03);
-			shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].quadratic", 0.01);
-			shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.ambient", glm::value_ptr(glm::vec3(0.03, 0.03, 0.0015)));
-			shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.diffuse", glm::value_ptr(glm::vec3(0.03, 0.03, 0.0015)));
-			shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.specular", glm::value_ptr(glm::vec3(0.08, 0.08, 0.08)));
-			shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].position", glm::value_ptr(lampPosition[i]));
-			shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].constant", 0.2);
-			shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].linear", 0.03);
-			shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].quadratic", 0.01);
-		}
+		//std::cout << totalSpot << std::endl;
+
+		//shaderMulLighting.setInt("pointLightCount", totalSpot);
+		//shaderTerrain.setInt("pointLightCount", totalSpot);
+		//for (int i = 0; i < totalSpot; i++) {
+		//	shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.ambient", glm::value_ptr(glm::vec3(0.03, 0.03, 0.001)));
+		//	shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.diffuse", glm::value_ptr(glm::vec3(0.03, 0.03, 0.001)));
+		//	shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.specular", glm::value_ptr(glm::vec3(0.08, 0.08, 0.08)));
+		//	shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].position", glm::value_ptr(maze.GetTorchPositions()[i]));
+		//	shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].constant", 0.2);
+		//	shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].linear", 0.03);
+		//	shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].quadratic", 0.01);
+		//	shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.ambient", glm::value_ptr(glm::vec3(0.03, 0.03, 0.0015)));
+		//	shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.diffuse", glm::value_ptr(glm::vec3(0.03, 0.03, 0.0015)));
+		//	shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.specular", glm::value_ptr(glm::vec3(0.08, 0.08, 0.08)));
+		//	shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].position", glm::value_ptr(maze.GetTorchPositions()[i]));
+		//	shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].constant", 0.2);
+		//	shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].linear", 0.03);
+		//	shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].quadratic", 0.01);
+		//}
 
 
 
