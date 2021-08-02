@@ -47,6 +47,7 @@
 #include "../Include/Maze.h"
 #include "../Include/Collectable.h"
 #include "../Include/GameSystem.h"
+#include "../Include/MainMenu.h"
 
 #define ARRAY_SIZE_IN_ELEMENTS(a) (sizeof(a)/sizeof(a[0]))
 
@@ -86,17 +87,23 @@ Model modelPared;
 Model modelAntorcha;
 Model modelGhost;
 
-Maze maze(5, 5, 8.2f);
+int mazeWidth = 5;
+int mazeHeight = 5;
+float mazeCellSize = 8.2f;
+Maze maze(mazeWidth, mazeHeight, mazeCellSize);
+Maze* maze_ptr = &maze;
 float elapsedTime;
 
+MainMenu mainMenu;
+
 std::vector<Collectable> collectables = {
-	Collectable(&modelEsfera, glm::vec3(2 * 8.2f, 2, 2 * 8.2f)),
-	Collectable(&modelEsfera, glm::vec3(4 * 8.2f, 2, 0)),
-	Collectable(&modelEsfera, glm::vec3(0, 2, 4 * 8.2f)),
-	Collectable(&modelEsfera, glm::vec3(4 * 8.2f, 2, 4 * 8.2f))
+	Collectable(&modelEsfera, glm::vec3(2 * mazeCellSize, 2, 2 * mazeCellSize)),
+	Collectable(&modelEsfera, glm::vec3(4 * mazeCellSize, 2, 0 * mazeCellSize)),
+	Collectable(&modelEsfera, glm::vec3(0 * mazeCellSize, 2, 4 * mazeCellSize)),
+	Collectable(&modelEsfera, glm::vec3(4 * mazeCellSize, 2, 4 * mazeCellSize))
 };
 
-GameSystem gameSystem = GameSystem();
+GameSystem gameSystem = GameSystem(collectables);
 
 GLuint textureCespedID, textureWallID, textureWindowID, textureHighwayID, textureLandingPadID;
 GLuint textureTerrainBackgroundID, textureTerrainRID, textureTerrainGID, textureTerrainBID, textureTerrainBlendMapID;
@@ -131,8 +138,6 @@ int animationIndex = 0;
 int modelSelected = 0;
 bool enableCountSelected = true;
 
-
-
 double deltaTime;
 double currTime, lastTime;
 
@@ -144,7 +149,6 @@ double startTimeJump = 0;
 
 // Colliders
 std::map<std::string, std::tuple<AbstractModel::OBB, glm::mat4, glm::mat4> > collidersOBB;
-std::map<std::string, std::tuple<AbstractModel::OBB, glm::mat4, glm::mat4> > collectablesOBB;
 std::map<std::string, std::tuple<AbstractModel::SBB, glm::mat4, glm::mat4> > collidersSBB;
 
 // Se definen todos las funciones.
@@ -250,7 +254,7 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	modelEsfera.loadModel("../models/ProyectoFinal/modelEsfera.obj");
 	modelEsfera.setShader(&shaderMulLighting);
 
-	//Model pasajeSur
+	//Model pared
 	modelPared.loadModel("../models/ProyectoFinal/ParedProy.obj");
 	modelPared.setShader(&shaderMulLighting);
 
@@ -567,6 +571,11 @@ bool processInput(bool continueApplication) {
 		return false;
 	}
 
+	if (glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_PRESS)
+	{
+		gameSystem.EnterPress();
+	}
+
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
 		modelMatrixGirl = glm::rotate(modelMatrixGirl, (float)-(offsetX * deltaTime), glm::vec3(0, 1, 0));
 	//camera->mouseMoveCamera(offsetX, 0.0, deltaTime);
@@ -650,7 +659,7 @@ void applicationLoop() {
 			continue;
 		}
 		lastTime = currTime;
-		TimeManager::Instance().CalculateFrameRate(true);
+		TimeManager::Instance().CalculateFrameRate(false);
 		deltaTime = TimeManager::Instance().DeltaTime;
 		psi = processInput(true);
 
@@ -659,7 +668,7 @@ void applicationLoop() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glm::mat4 projection = glm::perspective(glm::radians(45.0f),
-			(float)screenWidth / (float)screenHeight, 0.01f, 100.0f);
+			(float)screenWidth / (float)screenHeight, 0.01f, 50.0f);
 
 		if (modelSelected == 0)
 		{
@@ -820,9 +829,6 @@ void applicationLoop() {
 		// Model Girl
 		modelMatrixGirl[3][1] = terrain.getHeightTerrain(modelMatrixGirl[3][0], modelMatrixGirl[3][2]);
 		glm::mat4 modelMatrixGirlBody = glm::mat4(modelMatrixGirl);
-		//glm::mat4 modelMatrixGirlBody = glm::mat4(1.0);
-		//modelMatrixGirlBody[3] = modelMatrixGirl[3];
-		//modelMatrixGirlBody = glm::translate(modelMatrixGirlBody, glm::vec3(0.0, 0.0, 5.0));
 		modelMatrixGirlBody = glm::scale(modelMatrixGirlBody, glm::vec3(0.01, 0.01, 0.01));
 		girlModelAnimate.render(modelMatrixGirlBody);
 
@@ -861,26 +867,14 @@ void applicationLoop() {
 		 * IMPORTANT do this before interpolations
 		 *******************************************/
 
-
 		 // Colision de la camara, no se ve porque la cámara está dentro de la esfera
 		AbstractModel::SBB cameraCollider;
 		glm::mat4 modelMatrixColliderCamera = glm::mat4(1.0);
 		modelMatrixColliderCamera[3] = glm::vec4(glm::vec3(modelMatrixGirl[3]) + glm::vec3(modelMatrixGirl[0]) * targetOffset.x + glm::vec3(modelMatrixGirl[1]) * targetOffset.y + camera->getFront() * (-distanceFromTarget + 1), 1);
-		//modelMatrixColliderCamera[3] = modelMatrixGirl[3] + glm::vec4(0, 1.5, 0, 1);
 		modelMatrixColliderCamera = glm::translate(modelMatrixColliderCamera, modelEsfera.getSbb().c);
 		cameraCollider.c = glm::vec3(modelMatrixColliderCamera[3]);
 		cameraCollider.ratio = modelEsfera.getSbb().ratio * 0.6;
 		addOrUpdateColliders(collidersSBB, "camera", cameraCollider, modelMatrixColliderCamera);
-
-
-		//// Collider de la roca
-		//AbstractModel::SBB rockCollider;
-		//glm::mat4 modelMatrixColliderRock = glm::mat4(matrixModelRock);
-		//modelMatrixColliderRock = glm::scale(modelMatrixColliderRock, glm::vec3(1.0, 1.0, 1.0));
-		//modelMatrixColliderRock = glm::translate(modelMatrixColliderRock, modelRock.getSbb().c);
-		//rockCollider.c = modelMatrixColliderRock[3];
-		//rockCollider.ratio = modelRock.getSbb().ratio * 1.0;
-		//addOrUpdateColliders(collidersSBB, "rock", rockCollider, matrixModelRock);
 
 		//Collider de Girl
 		AbstractModel::OBB girlCollider;
@@ -893,32 +887,8 @@ void applicationLoop() {
 		girlCollider.e = girlModelAnimate.getObb().e * glm::vec3(0.005, 0.015, 0.01) * glm::vec3(0.785, 0.785, 0.785);
 		addOrUpdateColliders(collidersOBB, "girl", girlCollider, modelMatrixGirl);
 
-		maze.DisplayMaze(modelNodo, modelPared, modelAntorcha, collidersOBB);
+		maze_ptr->DisplayMaze(modelNodo, modelPared, modelAntorcha, collidersOBB);
 		gameSystem.UpdateCollectables(collectables, girlCollider);
-		totalSpot = maze.GetTorchPositions().size();
-
-		//std::cout << totalSpot << std::endl;
-
-		//shaderMulLighting.setInt("pointLightCount", totalSpot);
-		//shaderTerrain.setInt("pointLightCount", totalSpot);
-		//for (int i = 0; i < totalSpot; i++) {
-		//	shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.ambient", glm::value_ptr(glm::vec3(0.03, 0.03, 0.001)));
-		//	shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.diffuse", glm::value_ptr(glm::vec3(0.03, 0.03, 0.001)));
-		//	shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.specular", glm::value_ptr(glm::vec3(0.08, 0.08, 0.08)));
-		//	shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].position", glm::value_ptr(maze.GetTorchPositions()[i]));
-		//	shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].constant", 0.2);
-		//	shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].linear", 0.03);
-		//	shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].quadratic", 0.01);
-		//	shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.ambient", glm::value_ptr(glm::vec3(0.03, 0.03, 0.0015)));
-		//	shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.diffuse", glm::value_ptr(glm::vec3(0.03, 0.03, 0.0015)));
-		//	shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.specular", glm::value_ptr(glm::vec3(0.08, 0.08, 0.08)));
-		//	shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].position", glm::value_ptr(maze.GetTorchPositions()[i]));
-		//	shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].constant", 0.2);
-		//	shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].linear", 0.03);
-		//	shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].quadratic", 0.01);
-		//}
-
-
 
 		/*******************************************
 		 * Render de colliders
@@ -943,26 +913,6 @@ void applicationLoop() {
 		 //	sphereCollider.enableWireMode();
 		 //	sphereCollider.render(matrixCollider);
 		 //}
-
-		 // Esto es para ilustrar la transformacion inversa de los coliders
-		 /*glm::vec3 cinv = glm::inverse(mayowCollider.u) * glm::vec4(rockCollider.c, 1.0);
-		 glm::mat4 invColliderS = glm::mat4(1.0);
-		 invColliderS = glm::translate(invColliderS, cinv);
-		 invColliderS =  invColliderS * glm::mat4(mayowCollider.u);
-		 invColliderS = glm::scale(invColliderS, glm::vec3(rockCollider.ratio * 2.0, rockCollider.ratio * 2.0, rockCollider.ratio * 2.0));
-		 sphereCollider.setColor(glm::vec4(1.0, 1.0, 0.0, 1.0));
-		 sphereCollider.enableWireMode();
-		 sphereCollider.render(invColliderS);
-		 glm::vec3 cinv2 = glm::inverse(mayowCollider.u) * glm::vec4(mayowCollider.c, 1.0);
-		 glm::mat4 invColliderB = glm::mat4(1.0);
-		 invColliderB = glm::translate(invColliderB, cinv2);
-		 invColliderB = glm::scale(invColliderB, mayowCollider.e * 2.0f);
-		 boxCollider.setColor(glm::vec4(1.0, 1.0, 0.0, 1.0));
-		 boxCollider.enableWireMode();
-		 boxCollider.render(invColliderB);
-		 // Se regresa el color blanco
-		 sphereCollider.setColor(glm::vec4(1.0, 1.0, 1.0, 1.0));
-		 boxCollider.setColor(glm::vec4(1.0, 1.0, 1.0, 1.0));*/
 
 		 /*****************************************************
 		 * Test prueba de colisiones

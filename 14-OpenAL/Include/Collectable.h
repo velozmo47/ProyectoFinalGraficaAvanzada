@@ -26,4 +26,9 @@ public:
 		collider.e = model->getObb().e * glm::vec3(1.0);
 		return collider;
 	}
+
+	void Effect()
+	{
+		modelMatrixCollider = glm::rotate(modelMatrixCollider, glm::radians(1.0f), glm::vec3(0, 1, 0));
+	}
 };

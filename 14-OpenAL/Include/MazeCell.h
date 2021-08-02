@@ -16,7 +16,7 @@ public:
 		hasTorch = rand() % 100 < 30;
 		x = 0;
 		y = 0;
-		//torchMatrix = glm::mat4(1.0);
+		torchMatrix = glm::mat4(1.0);
 	}
 
 	void AddWall(float rotation, glm::vec3 position)
