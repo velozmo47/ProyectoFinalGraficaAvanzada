@@ -44,7 +44,13 @@
 #include "Headers/Colisiones.h"
 
 // Maze
-#include "Headers/Maze.h"
+#include "../Include/Maze.h"
+#include "../Include/Collectable.h"
+#include "../Include/GameSystem.h"
+#include "../Include/MainMenu.h"
+
+#include <ft2build.h>
+#include FT_FREETYPE_H
 
 #define ARRAY_SIZE_IN_ELEMENTS(a) (sizeof(a)/sizeof(a[0]))
 
@@ -72,7 +78,6 @@ Sphere skyboxSphere(20, 20);
 Box boxCollider;
 Sphere sphereCollider(10, 10);
 Cylinder cylinderRay(10, 10, 0.05, 0.05);
-
 std::vector<glm::vec3> lampPosition{};
 
 // Girl
@@ -85,8 +90,23 @@ Model modelPared;
 Model modelAntorcha;
 Model modelGhost;
 
-Maze maze(5, 5, 1, 8.2f);
+int mazeWidth = 5;
+int mazeHeight = 5;
+float mazeCellSize = 8.2f;
+Maze maze(mazeWidth, mazeHeight, mazeCellSize);
+Maze* maze_ptr = &maze;
 float elapsedTime;
+
+MainMenu mainMenu;
+
+std::vector<Collectable> collectables = {
+	Collectable(&modelEsfera, glm::vec3(2 * mazeCellSize, 2, 2 * mazeCellSize)),
+	Collectable(&modelEsfera, glm::vec3(4 * mazeCellSize, 2, 0 * mazeCellSize)),
+	Collectable(&modelEsfera, glm::vec3(0 * mazeCellSize, 2, 4 * mazeCellSize)),
+	Collectable(&modelEsfera, glm::vec3(4 * mazeCellSize, 2, 4 * mazeCellSize))
+};
+
+GameSystem gameSystem = GameSystem(collectables);
 
 GLuint textureCespedID, textureWallID, textureWindowID, textureHighwayID, textureLandingPadID;
 GLuint textureTerrainBackgroundID, textureTerrainRID, textureTerrainGID, textureTerrainBID, textureTerrainBlendMapID;
@@ -120,8 +140,6 @@ glm::vec3 targetOffset = glm::vec3(-0.35f, 1.5f, 0);
 int animationIndex = 0;
 int modelSelected = 0;
 bool enableCountSelected = true;
-
-
 
 double deltaTime;
 double currTime, lastTime;
@@ -239,7 +257,7 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	modelEsfera.loadModel("../models/ProyectoFinal/modelEsfera.obj");
 	modelEsfera.setShader(&shaderMulLighting);
 
-	//Model pasajeSur
+	//Model pared
 	modelPared.loadModel("../models/ProyectoFinal/ParedProy2.obj");
 	modelPared.setShader(&shaderMulLighting);
 
@@ -556,6 +574,11 @@ bool processInput(bool continueApplication) {
 		return false;
 	}
 
+	if (glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_PRESS)
+	{
+		gameSystem.EnterPress();
+	}
+
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
 		modelMatrixGirl = glm::rotate(modelMatrixGirl, (float)-(offsetX * deltaTime), glm::vec3(0, 1, 0));
 	//camera->mouseMoveCamera(offsetX, 0.0, deltaTime);
@@ -587,19 +610,19 @@ bool processInput(bool continueApplication) {
 	{
 		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 		{
-			modelMatrixGirl = glm::rotate(modelMatrixGirl, 0.08f, glm::vec3(0, 1, 0));
+			modelMatrixGirl = glm::rotate(modelMatrixGirl, 5.0f * (float) deltaTime, glm::vec3(0, 1, 0));
 		}
 		else if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 		{
-			modelMatrixGirl = glm::rotate(modelMatrixGirl, -0.08f, glm::vec3(0, 1, 0));
+			modelMatrixGirl = glm::rotate(modelMatrixGirl, -5.0f * (float) deltaTime, glm::vec3(0, 1, 0));
 		}
 		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 		{
-			modelMatrixGirl = glm::translate(modelMatrixGirl, glm::vec3(0.0, 0.0, 0.3));
+			modelMatrixGirl = glm::translate(modelMatrixGirl, glm::vec3(0.0, 0.0, 7.5) * (float) deltaTime);
 		}
 		else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
 		{
-			modelMatrixGirl = glm::translate(modelMatrixGirl, glm::vec3(0.0, 0.0, -0.3));
+			modelMatrixGirl = glm::translate(modelMatrixGirl, glm::vec3(0.0, 0.0, -7.5) * (float) deltaTime);
 		}
 
 		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
@@ -648,7 +671,7 @@ void applicationLoop() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glm::mat4 projection = glm::perspective(glm::radians(45.0f),
-			(float)screenWidth / (float)screenHeight, 0.01f, 100.0f);
+			(float)screenWidth / (float)screenHeight, 0.01f, 50.0f);
 
 		if (modelSelected == 0)
 		{
@@ -694,7 +717,7 @@ void applicationLoop() {
 		 * Propiedades Luz direccional
 		 *******************************************/
 		shaderMulLighting.setVectorFloat3("viewPos", glm::value_ptr(camera->getPosition()));
-		shaderMulLighting.setVectorFloat3("directionalLight.light.ambient", glm::value_ptr(glm::vec3(0.05)));
+		shaderMulLighting.setVectorFloat3("directionalLight.light.ambient", glm::value_ptr(glm::vec3(0.2)));
 		shaderMulLighting.setVectorFloat3("directionalLight.light.diffuse", glm::value_ptr(glm::vec3(0.05)));
 		shaderMulLighting.setVectorFloat3("directionalLight.light.specular", glm::value_ptr(glm::vec3(.01)));
 		shaderMulLighting.setVectorFloat3("directionalLight.direction", glm::value_ptr(glm::vec3(-1.0, 0.0, 0.0)));
@@ -702,9 +725,9 @@ void applicationLoop() {
 		/*******************************************
 		 * Propiedades Luz direccional Terrain
 		 *******************************************/
-		
+
 		shaderTerrain.setVectorFloat3("viewPos", glm::value_ptr(camera->getPosition()));
-		shaderTerrain.setVectorFloat3("directionalLight.light.ambient", glm::value_ptr(glm::vec3(0.05)));
+		shaderTerrain.setVectorFloat3("directionalLight.light.ambient", glm::value_ptr(glm::vec3(0.2)));
 		shaderTerrain.setVectorFloat3("directionalLight.light.diffuse", glm::value_ptr(glm::vec3(0.05)));
 		shaderTerrain.setVectorFloat3("directionalLight.light.specular", glm::value_ptr(glm::vec3(0.01)));
 		shaderTerrain.setVectorFloat3("directionalLight.direction", glm::value_ptr(glm::vec3(-1.0, 0.0, 0.0)));
@@ -742,9 +765,9 @@ void applicationLoop() {
 		 * Propiedades PointLights
 		 *******************************************/
 
-		/*******************************************
-		 * Terrain Cesped
-		 *******************************************/
+		 /*******************************************
+		  * Terrain Cesped
+		  *******************************************/
 		glm::mat4 modelCesped = glm::mat4(1.0);
 		modelCesped = glm::translate(modelCesped, glm::vec3(0.0, 0.0, 0.0));
 		modelCesped = glm::scale(modelCesped, glm::vec3(200.0, 0.001, 200.0));
@@ -789,29 +812,26 @@ void applicationLoop() {
 
 		switch (GhostStates) {
 		case 0:
-			rotGhost =0;
-			Ghost= Ghost+0.2f;
-			if (Ghost > 25){
+			rotGhost = 0;
+			Ghost = Ghost + 0.2f;
+			if (Ghost > 25) {
 				GhostStates = 1;
 				rotGhost = 180;
 			}
 			break;
 
 		case 1:
-			Ghost= Ghost- 0.2f;
+			Ghost = Ghost - 0.2f;
 			if (Ghost < 5) {
 				GhostStates = 0;
 			}
 			break;
 
 		}
-		
+
 		// Model Girl
 		modelMatrixGirl[3][1] = terrain.getHeightTerrain(modelMatrixGirl[3][0], modelMatrixGirl[3][2]);
 		glm::mat4 modelMatrixGirlBody = glm::mat4(modelMatrixGirl);
-		//glm::mat4 modelMatrixGirlBody = glm::mat4(1.0);
-		//modelMatrixGirlBody[3] = modelMatrixGirl[3];
-		//modelMatrixGirlBody = glm::translate(modelMatrixGirlBody, glm::vec3(0.0, 0.0, 5.0));
 		modelMatrixGirlBody = glm::scale(modelMatrixGirlBody, glm::vec3(0.01, 0.01, 0.01));
 		girlModelAnimate.render(modelMatrixGirlBody);
 
@@ -849,27 +869,15 @@ void applicationLoop() {
 		 * Creacion de colliders
 		 * IMPORTANT do this before interpolations
 		 *******************************************/
-		
 
-		// Colision de la camara, no se ve porque la cámara está dentro de la esfera
+		 // Colision de la camara, no se ve porque la cámara está dentro de la esfera
 		AbstractModel::SBB cameraCollider;
 		glm::mat4 modelMatrixColliderCamera = glm::mat4(1.0);
 		modelMatrixColliderCamera[3] = glm::vec4(glm::vec3(modelMatrixGirl[3]) + glm::vec3(modelMatrixGirl[0]) * targetOffset.x + glm::vec3(modelMatrixGirl[1]) * targetOffset.y + camera->getFront() * (-distanceFromTarget + 1), 1);
-		//modelMatrixColliderCamera[3] = modelMatrixGirl[3] + glm::vec4(0, 1.5, 0, 1);
 		modelMatrixColliderCamera = glm::translate(modelMatrixColliderCamera, modelEsfera.getSbb().c);
 		cameraCollider.c = glm::vec3(modelMatrixColliderCamera[3]);
 		cameraCollider.ratio = modelEsfera.getSbb().ratio * 0.6;
 		addOrUpdateColliders(collidersSBB, "camera", cameraCollider, modelMatrixColliderCamera);
-
-
-		//// Collider de la roca
-		//AbstractModel::SBB rockCollider;
-		//glm::mat4 modelMatrixColliderRock = glm::mat4(matrixModelRock);
-		//modelMatrixColliderRock = glm::scale(modelMatrixColliderRock, glm::vec3(1.0, 1.0, 1.0));
-		//modelMatrixColliderRock = glm::translate(modelMatrixColliderRock, modelRock.getSbb().c);
-		//rockCollider.c = modelMatrixColliderRock[3];
-		//rockCollider.ratio = modelRock.getSbb().ratio * 1.0;
-		//addOrUpdateColliders(collidersSBB, "rock", rockCollider, matrixModelRock);
 
 		//Collider de Girl
 		AbstractModel::OBB girlCollider;
@@ -882,33 +890,8 @@ void applicationLoop() {
 		girlCollider.e = girlModelAnimate.getObb().e * glm::vec3(0.005, 0.015, 0.01) * glm::vec3(0.785, 0.785, 0.785);
 		addOrUpdateColliders(collidersOBB, "girl", girlCollider, modelMatrixGirl);
 
-
-		maze.OnUserUpdate(modelNodo, modelPared,modelAntorcha, collidersOBB);
-		totalSpot=maze.SpotTotal();
-		lampPosition.resize(totalSpot);
-		for (int i = 0; i < totalSpot; i++){
-			lampPosition[i] = maze.SetLamp(i);
-		}
-		shaderMulLighting.setInt("pointLightCount",totalSpot);
-		shaderTerrain.setInt("pointLightCount", totalSpot); 
-		for (int i = 0; i < lampPosition.size(); i++) {
-			shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.ambient", glm::value_ptr(glm::vec3(0.03, 0.03, 0.001)));
-			shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.diffuse", glm::value_ptr(glm::vec3(0.03, 0.03, 0.001)));
-			shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.specular", glm::value_ptr(glm::vec3(0.08, 0.08, 0.08)));
-			shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].position", glm::value_ptr(lampPosition[i]));
-			shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].constant", 0.2);
-			shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].linear", 0.03);
-			shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].quadratic", 0.01);
-			shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.ambient", glm::value_ptr(glm::vec3(0.03, 0.03, 0.0015)));
-			shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.diffuse", glm::value_ptr(glm::vec3(0.03, 0.03, 0.0015)));
-			shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.specular", glm::value_ptr(glm::vec3(0.08, 0.08, 0.08)));
-			shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].position", glm::value_ptr(lampPosition[i]));
-			shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].constant", 0.2);
-			shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].linear", 0.03);
-			shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].quadratic", 0.01);
-		}
-
-
+		maze_ptr->DisplayMaze(modelNodo, modelPared, modelAntorcha, collidersOBB);
+		gameSystem.UpdateCollectables(collectables, girlCollider);
 
 		/*******************************************
 		 * Render de colliders
@@ -933,26 +916,6 @@ void applicationLoop() {
 		 //	sphereCollider.enableWireMode();
 		 //	sphereCollider.render(matrixCollider);
 		 //}
-
-		 // Esto es para ilustrar la transformacion inversa de los coliders
-		 /*glm::vec3 cinv = glm::inverse(mayowCollider.u) * glm::vec4(rockCollider.c, 1.0);
-		 glm::mat4 invColliderS = glm::mat4(1.0);
-		 invColliderS = glm::translate(invColliderS, cinv);
-		 invColliderS =  invColliderS * glm::mat4(mayowCollider.u);
-		 invColliderS = glm::scale(invColliderS, glm::vec3(rockCollider.ratio * 2.0, rockCollider.ratio * 2.0, rockCollider.ratio * 2.0));
-		 sphereCollider.setColor(glm::vec4(1.0, 1.0, 0.0, 1.0));
-		 sphereCollider.enableWireMode();
-		 sphereCollider.render(invColliderS);
-		 glm::vec3 cinv2 = glm::inverse(mayowCollider.u) * glm::vec4(mayowCollider.c, 1.0);
-		 glm::mat4 invColliderB = glm::mat4(1.0);
-		 invColliderB = glm::translate(invColliderB, cinv2);
-		 invColliderB = glm::scale(invColliderB, mayowCollider.e * 2.0f);
-		 boxCollider.setColor(glm::vec4(1.0, 1.0, 0.0, 1.0));
-		 boxCollider.enableWireMode();
-		 boxCollider.render(invColliderB);
-		 // Se regresa el color blanco
-		 sphereCollider.setColor(glm::vec4(1.0, 1.0, 1.0, 1.0));
-		 boxCollider.setColor(glm::vec4(1.0, 1.0, 1.0, 1.0));*/
 
 		 /*****************************************************
 		 * Test prueba de colisiones
@@ -1120,6 +1083,21 @@ void applicationLoop() {
 
 int main(int argc, char** argv) {
 	init(800, 700, "Window GLFW", false);
+
+	FT_Library ft;
+	if (FT_Init_FreeType(&ft))
+	{
+		std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
+		return -1;
+	}
+
+	FT_Face face;
+	if (FT_New_Face(ft, "../fonts/ARIAL.ttf", 0, &face))
+	{
+		std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl;
+		return -1;
+	}
+
 	applicationLoop();
 	destroy();
 	return 1;
