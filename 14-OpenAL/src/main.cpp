@@ -49,6 +49,9 @@
 #include "../Include/GameSystem.h"
 #include "../Include/MainMenu.h"
 
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
 #define ARRAY_SIZE_IN_ELEMENTS(a) (sizeof(a)/sizeof(a[0]))
 
 int screenWidth;
@@ -1080,6 +1083,21 @@ void applicationLoop() {
 
 int main(int argc, char** argv) {
 	init(800, 700, "Window GLFW", false);
+
+	FT_Library ft;
+	if (FT_Init_FreeType(&ft))
+	{
+		std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
+		return -1;
+	}
+
+	FT_Face face;
+	if (FT_New_Face(ft, "../fonts/ARIAL.ttf", 0, &face))
+	{
+		std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl;
+		return -1;
+	}
+
 	applicationLoop();
 	destroy();
 	return 1;
