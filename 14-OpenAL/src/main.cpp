@@ -240,7 +240,7 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	modelEsfera.setShader(&shaderMulLighting);
 
 	//Model pasajeSur
-	modelPared.loadModel("../models/ProyectoFinal/ParedProy.obj");
+	modelPared.loadModel("../models/ProyectoFinal/ParedProy2.obj");
 	modelPared.setShader(&shaderMulLighting);
 
 	// Girl
