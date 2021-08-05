@@ -34,9 +34,13 @@
 
 class DLL_PUBLIC Shader {
 public:
-
+	unsigned int ID;
 	~Shader() {
 		destroy();
+	}
+	void use()
+	{
+		glUseProgram(ID);
 	}
 
 	std::string loadShaderFile(std::string strFile);
@@ -133,5 +137,7 @@ private:
 	GLuint FragmentShaderId;
 	GLuint ShaderProgramId;
 };
+
+
 
 #endif
