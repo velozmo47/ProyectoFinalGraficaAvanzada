@@ -74,13 +74,13 @@ namespace FontTypeRendering {
 		 * Y genera la textura para el renderizado.
 		 */
 		void Initialize();
+		void render(const std::string & str, float x, float y, int tam, float r, float g, float b, float alpha);
 		/**
 		 * Método que renderiza un texto en el espacio de la pantalla.
 		 * @param str Cadena a renderizar.
 		 * @param x Coordenada en X.
 		 * @param y Coordenada en Y.
 		 */
-		void render(const std::string &str, float x, float y);
 		/**
 		 * Destructor de clase.
 		 */

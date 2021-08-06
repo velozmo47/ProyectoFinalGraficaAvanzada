@@ -1,4 +1,5 @@
-﻿
+﻿#include "..\..\CGALib\include\Headers\FontTypeRendering.h"
+
 
 
 /*
@@ -41,7 +42,7 @@ namespace FontTypeRendering {
 	 * @param ScreenHeight Largo de ventana.
 	 */
 	FontTypeRendering::FontTypeRendering(double ScreenWidth, double ScreenHeight) {
-		FontTypeRendering::SCALEX = 2.0 / ScreenWidth;
+		FontTypeRendering::SCALEX = 2.5 / ScreenWidth;
 		FontTypeRendering::SCALEY = 2.0 / ScreenHeight;
 	}
 
@@ -75,7 +76,7 @@ namespace FontTypeRendering {
 			return exit(-1);
 		}
 		// Se le indica a dicha cara el archivo ttf que se utilizar�.
-		if (FT_New_Face(ft_lib, "../Fonts/arial.ttf", 0, &face) != 0) {
+		if (FT_New_Face(ft_lib, "../Fonts/carolingia.ttf", 0, &face) != 0) {
 			std::cerr << "Unable to load arial.ttf\n";
 			cleanup();
 			return exit(-1);
@@ -117,7 +118,7 @@ namespace FontTypeRendering {
 	 * @param x Coordenada en X.
 	 * @param y Coordenada en Y.
 	 */
-	void FontTypeRendering::render(const std::string &str, float x, float y) {
+	void FontTypeRendering::render(const std::string &str, float x, float y, int tam,float r, float g, float b, float alpha) {
 		// Se activa la unidad de textura.
 		glActiveTexture(GL_TEXTURE0);
 		// Se enalza hacia el tipo de textura.
@@ -128,11 +129,11 @@ namespace FontTypeRendering {
 		glBindBuffer(GL_ARRAY_BUFFER, vbo);
 		glUseProgram(program);
 		// Se envia el color de la fuente.
-		glUniform4f(colorUniform, 0.5, 1.0, 1.0, 1.0);
+		glUniform4f(colorUniform, r, g, b, alpha);
 		// Se envia la textura a utilizar.
 		glUniform1i(texUniform, 0);
 		// Se coloca el tama�o en Pixeles de la fuente.
-		FT_Set_Pixel_Sizes(face, 0, 12);
+		FT_Set_Pixel_Sizes(face, 0, tam);
 		// Renderiza la fuente.
 		render_text(str, face, x, y, SCALEX, SCALEY);
 		// Se desabilita el sample de textura.

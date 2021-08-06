@@ -17,18 +17,19 @@ public:
 		nextCollectable = 0;
 	}
 
-	void UpdateCollectables(std::vector<Collectable>& collectables, AbstractModel::OBB& character)
+	int UpdateCollectables(std::vector<Collectable>& collectables, AbstractModel::OBB& character)
 	{
 		if (GameCompleted)
 		{
 			std::cout << "Recolectables completos" << std::endl;
-			return;
+			return 1;
 		}
 
-		collectables[nextCollectable].Effect();
+		collectables[nextCollectable].Effect(); 
 		bool revision = CheckCollectable(collectables[nextCollectable], character);
 
 		GameCompleted = revision && nextCollectable >= collectables.size();
+		return 0;
 	}
 
 	bool CheckCollectable(Collectable& collectable, AbstractModel::OBB& character)

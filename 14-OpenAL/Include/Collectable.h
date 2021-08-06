@@ -7,6 +7,7 @@ public:
 	AbstractModel::OBB collider;
 	bool collected;
 
+
 	Collectable(Model* model, glm::vec3 posicion) : model(model)
 	{
 		this->model = model;

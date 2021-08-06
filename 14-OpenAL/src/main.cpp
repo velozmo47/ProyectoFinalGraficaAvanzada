@@ -82,18 +82,20 @@ Sphere skyboxSphere(20, 20);
 Box boxCollider;
 Sphere sphereCollider(10, 10);
 Cylinder cylinderRay(10, 10, 0.05, 0.05);
-std::vector<glm::vec3> lampPosition{};
 
-// Girl
-Model girlModelAnimate;
+// Guard
+Model GuardModelAnimate;
+
+//terreno
 Terrain terrain(-1, -1, 150, 4, "../Textures/Heightmap.png");
 
 Model modelNodo;
-Model modelEsfera;
+Model modelMoneda;
 Model modelPared;
 Model modelAntorcha;
 Model modelGhost;
 
+//variables de laberinto
 int mazeWidth = 5;
 int mazeHeight = 5;
 float mazeCellSize = 8.2f;
@@ -103,20 +105,27 @@ float elapsedTime;
 
 MainMenu mainMenu;
 
+glm::vec3 positionsCol;
+
+//variable de fin de juego
+int endGame;
+
+//vector posiciones de coleccionables
 std::vector<Collectable> collectables = {
-	Collectable(&modelEsfera, glm::vec3(2 * mazeCellSize, 2, 2 * mazeCellSize)),
-	Collectable(&modelEsfera, glm::vec3(4 * mazeCellSize, 2, 0 * mazeCellSize)),
-	Collectable(&modelEsfera, glm::vec3(0 * mazeCellSize, 2, 4 * mazeCellSize)),
-	Collectable(&modelEsfera, glm::vec3(4 * mazeCellSize, 2, 4 * mazeCellSize))
+	Collectable(&modelMoneda, glm::vec3(2 * mazeCellSize, 2, 2 * mazeCellSize)),
+	Collectable(&modelMoneda, glm::vec3(4 * mazeCellSize, 2, 0 * mazeCellSize)),
+	Collectable(&modelMoneda, glm::vec3(0 * mazeCellSize, 2, 4 * mazeCellSize)),
+	Collectable(&modelMoneda, glm::vec3(4 * mazeCellSize, 2, 4 * mazeCellSize))
 };
 
 GameSystem gameSystem = GameSystem(collectables);
 
+//Creación de texturas
 GLuint textureCespedID, textureWallID, textureWindowID, textureHighwayID, textureLandingPadID;
 GLuint textureTerrainBackgroundID, textureTerrainRID, textureTerrainGID, textureTerrainBID, textureTerrainBlendMapID;
 GLuint skyboxTextureID;
 
-
+//Creación de modelo de texto
 FontTypeRendering::FontTypeRendering *modelText;
 
 GLenum types[6] = {
@@ -134,13 +143,14 @@ std::string fileNames[6] = { "../Textures/skybox1/1.png",
 		"../Textures/skybox1/5.png",
 		"../Textures/skybox1/6.png" };
 
+
 bool exitApp = false;
 int lastMousePosX, offsetX = 0;
 int lastMousePosY, offsetY = 0;
 int GhostStates = 0;
 
 // Model matrix definitions
-glm::mat4 modelMatrixGirl = glm::mat4(1.0f);
+glm::mat4 modelMatrixGuard = glm::mat4(1.0f);
 glm::mat4 modelMatrixGhost = glm::mat4(1.0f);
 glm::vec3 targetOffset = glm::vec3(-0.35f, 1.5f, 0);
 
@@ -163,15 +173,14 @@ std::map<std::string, std::tuple<AbstractModel::SBB, glm::mat4, glm::mat4> > col
 
 // Se definen todos las funciones.
 void reshapeCallback(GLFWwindow* Window, int widthRes, int heightRes);
-void keyCallback(GLFWwindow* window, int key, int scancode, int action,
-	int mode);
+void keyCallback(GLFWwindow* window, int key, int scancode, int action,int mode);
 void mouseCallback(GLFWwindow* window, double xpos, double ypos);
 void mouseButtonCallback(GLFWwindow* window, int button, int state, int mod);
 void scrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 void init(int width, int height, std::string strTitle, bool bFullScreen);
 void destroy();
 bool processInput(bool continueApplication = true);
-void RenderText(Shader &s, std::string text, float x, float y, float scale, glm::vec3 color);
+
 
 // Implementacion de todas las funciones.
 void init(int width, int height, std::string strTitle, bool bFullScreen) {
@@ -258,27 +267,27 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	terrain.setPosition(glm::vec3(100, 0, 100));
 
 
-	//Model cell
+	//Model Soporte
 	modelNodo.loadModel("../models/ProyectoFinal/NodoProy.obj");
 	modelNodo.setShader(&shaderMulLighting);
 
 	//Esfera
-	modelEsfera.loadModel("../models/ProyectoFinal/modelEsfera.obj");
-	modelEsfera.setShader(&shaderMulLighting);
+	modelMoneda.loadModel("../models/ProyectoFinal/Moneda/Moneda.obj");
+	modelMoneda.setShader(&shaderMulLighting);
 
 	//Model pared
 	modelPared.loadModel("../models/ProyectoFinal/ParedProy2.obj");
 	modelPared.setShader(&shaderMulLighting);
 
-	// Girl
-	//girlModelAnimate.loadModel("../models/ProyectoFinal/Guard.fbx");
-	girlModelAnimate.loadModel("../models/Practica2_obj/Girl.fbx");
-	girlModelAnimate.setShader(&shaderMulLighting);
+	// Guard
+	GuardModelAnimate.loadModel("../models/ProyectoFinal/Guard.fbx");
+	GuardModelAnimate.setShader(&shaderMulLighting);
 
+	//Antorcha
 	modelAntorcha.loadModel("../models/ProyectoFinal/Antorcha.obj");
 	modelAntorcha.setShader(&shaderMulLighting);
 
-
+	//model Fantasma
 	modelGhost.loadModel("../models/ProyectoFinal/ghost.obj");
 	modelGhost.setShader(&shaderMulLighting);
 
@@ -294,6 +303,7 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	// Carga de texturas para el skybox
 	Texture skyboxTexture = Texture("");
 	glGenTextures(1, &skyboxTextureID);
+
 	// Tipo de textura CUBE MAP
 	glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTextureID);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);// set texture wrapping to GL_REPEAT (default wrapping method)
@@ -482,6 +492,7 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	// Libera la memoria de la textura
 	textureTerrainBlendMap.freeImage(bitmap);
 
+	//Creacion de objeto texto
 	modelText = new FontTypeRendering::FontTypeRendering(screenWidth,screenHeight);
 	modelText->Initialize();
 }
@@ -510,10 +521,10 @@ void destroy() {
 	cylinderRay.destroy();
 
 	// Custom objects animate
-	girlModelAnimate.destroy();
+	GuardModelAnimate.destroy();
 	modelNodo.destroy();
 	modelPared.destroy();
-	modelEsfera.destroy();
+	modelMoneda.destroy();
 	modelAntorcha.destroy();
 	modelGhost.destroy();
 
@@ -592,10 +603,10 @@ bool processInput(bool continueApplication) {
 	}
 
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
-		modelMatrixGirl = glm::rotate(modelMatrixGirl, (float)-(offsetX * deltaTime), glm::vec3(0, 1, 0));
+		modelMatrixGuard = glm::rotate(modelMatrixGuard, (float)-(offsetX * deltaTime), glm::vec3(0, 1, 0));
 	//camera->mouseMoveCamera(offsetX, 0.0, deltaTime);
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
-		//modelMatrixGirl = glm::rotate(modelMatrixGirl,(float) (offsetY * deltaTime), glm::vec3(1, 0, 0));
+		//modelMatrixGuard = glm::rotate(modelMatrixGuard,(float) (offsetY * deltaTime), glm::vec3(1, 0, 0));
 		camera->mouseMoveCamera(0.0, offsetY, deltaTime);
 	offsetX = 0;
 	offsetY = 0;
@@ -622,35 +633,43 @@ bool processInput(bool continueApplication) {
 	{
 		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 		{
-			modelMatrixGirl = glm::rotate(modelMatrixGirl, 5.0f * (float) deltaTime, glm::vec3(0, 1, 0));
+			modelMatrixGuard = glm::rotate(modelMatrixGuard, 5.0f * (float) deltaTime, glm::vec3(0, 1, 0));
 		}
 		else if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 		{
-			modelMatrixGirl = glm::rotate(modelMatrixGirl, -5.0f * (float) deltaTime, glm::vec3(0, 1, 0));
+			modelMatrixGuard = glm::rotate(modelMatrixGuard, -5.0f * (float) deltaTime, glm::vec3(0, 1, 0));
 		}
-		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE)
 		{
-			modelMatrixGirl = glm::translate(modelMatrixGirl, glm::vec3(0.0, 0.0, 7.5) * (float) deltaTime);
+			modelMatrixGuard = glm::translate(modelMatrixGuard, glm::vec3(0.0, 0.0, 5.5) * (float) deltaTime);
+			GuardModelAnimate.setAnimationIndex(0);
 		}
-		else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+		else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE)
 		{
-			modelMatrixGirl = glm::translate(modelMatrixGirl, glm::vec3(0.0, 0.0, -7.5) * (float) deltaTime);
+			modelMatrixGuard = glm::translate(modelMatrixGuard, glm::vec3(0.0, 0.0, -5.5) * (float) deltaTime);
+			GuardModelAnimate.setAnimationIndex(0);
 		}
 
-		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+		
+		else if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
 		{
-			girlModelAnimate.setAnimationIndex(0);
+			modelMatrixGuard = glm::translate(modelMatrixGuard, glm::vec3(0.0, 0.0, 9.5) * (float)deltaTime);
+			GuardModelAnimate.setAnimationIndex(1);
+		}
+		else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+		{
+			modelMatrixGuard = glm::translate(modelMatrixGuard, glm::vec3(0.0, 0.0, -9.5) * (float)deltaTime);
+			GuardModelAnimate.setAnimationIndex(1);
+
 		}
 		else
 		{
-			//girlModelAnimate.setAnimationIndex(4);
-			girlModelAnimate.setAnimationIndex(1);
+			GuardModelAnimate.setAnimationIndex(4);
 		}
 	}
 	else
 	{
-		//girlModelAnimate.setAnimationIndex(4);
-		girlModelAnimate.setAnimationIndex(1);
+		GuardModelAnimate.setAnimationIndex(0);
 	}
 
 	glfwPollEvents();
@@ -688,15 +707,11 @@ void applicationLoop() {
 		glm::mat4 projection = glm::perspective(glm::radians(45.0f),
 			(float)screenWidth / (float)screenHeight, 0.01f, 50.0f);
 
-		
-		
-
-
 		if (modelSelected == 0)
 		{
-			axis = glm::axis(glm::quat_cast(modelMatrixGirl));
-			angleTarget = glm::angle(glm::quat_cast(modelMatrixGirl));
-			target = modelMatrixGirl[3] + modelMatrixGirl[0] * targetOffset.x + modelMatrixGirl[1] * targetOffset.y;
+			axis = glm::axis(glm::quat_cast(modelMatrixGuard));
+			angleTarget = glm::angle(glm::quat_cast(modelMatrixGuard));
+			target = modelMatrixGuard[3] + modelMatrixGuard[0] * targetOffset.x + modelMatrixGuard[1] * targetOffset.y;
 		}
 
 		if (std::isnan(angleTarget))
@@ -752,7 +767,18 @@ void applicationLoop() {
 		//estado del juego
 		if (gameSystem.currentState == 0)
 		{
-			//modelText->render("Texto en openGL", 0, 0);
+			//modelText->render("Bienvenido al laberinto",         x,      y size, R , G  , B  , Alpha);
+			//Renderizado de texto de inicio
+			       modelText->render("Bienvenido al laberinto",  -0.5,  0.6, 55, 1.0, 1.0, 1.0, 1.0);
+			modelText->render("para moverte utiliza las teclas", -0.8,  0.2, 40, 1.0, 1.0, 1.0, 1.0);
+			      modelText->render("W->avanzar hacia adelante", -0.4,  0.0, 40, 1.0, 0.0, 0.0, 1.0);
+				     modelText->render("S->avanzar hacia atras", -0.4, -0.1, 40, 1.0, 0.0, 0.0, 1.0);
+			  modelText->render("A->avanzar hacia la izquierda", -0.4, -0.2, 40, 1.0, 0.0, 0.0, 1.0);
+			    modelText->render("D->avanzar hacia la derecha", -0.4, -0.3, 40, 1.0, 0.0, 0.0, 1.0);
+					   modelText->render("W o S +Shift->correr", -0.4, -0.4, 40, 1.0, 0.0, 0.0, 1.0);
+				modelText->render("Encuentra todas las monedas", -0.8, -0.55, 40, 0.0, 1.0, 0.0, 1.0);
+				modelText->render("Cuidado con los fantasmas!!", -0.8, -0.65, 40, 1.0, 1.0, 1.0, 1.0);
+			   modelText->render("Presiona Enter para comenzar", -0.8, -0.85, 55, 1.0, 1.0, 1.0, 1.0);
 			std::cout << "Press ENTER to start" << std::endl;
 		}
 		else if (gameSystem.currentState == 1)
@@ -785,7 +811,7 @@ void applicationLoop() {
 			/*******************************************
 			 * Propiedades SpotLights
 			 *******************************************/
-			glm::vec3 spotPosition = glm::vec3(modelMatrixGirl[3]) + glm::vec3(0.0, 1.5, 0.2);
+			glm::vec3 spotPosition = glm::vec3(modelMatrixGuard[3]) + glm::vec3(0.0, 1.5, 0.2);
 			glm::vec3 dirSpotlight = camera->getFront();
 
 			shaderMulLighting.setInt("spotLightCount", 1);
@@ -810,12 +836,28 @@ void applicationLoop() {
 			shaderTerrain.setFloat("spotLights[0].quadratic", 0.03);
 			shaderTerrain.setFloat("spotLights[0].cutOff", cos(glm::radians(12.5f)));
 			shaderTerrain.setFloat("spotLights[0].outerCutOff", cos(glm::radians(40.0f)));
-
 			/*******************************************
 			 * Propiedades PointLights
 			 *******************************************/
-
-
+			shaderMulLighting.setInt("pointLightCount", 1);
+			shaderTerrain.setInt("pointLightCount", 1);
+			for (int i = 0; i <= 1; i++) {
+				shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.ambient", glm::value_ptr(glm::vec3(0.2, 0.16, 0.01)));
+				shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.diffuse", glm::value_ptr(glm::vec3(0.4, 0.32, 0.02)));
+				shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.specular", glm::value_ptr(glm::vec3(0.6, 0.58, 0.03)));
+				shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].position", glm::value_ptr(positionsCol));
+				shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].constant", 1.0);
+				shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].linear", 0.09);
+				shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].quadratic", 0.01);
+				shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.ambient", glm::value_ptr(glm::vec3(0.2, 0.16, 0.01)));
+				shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.diffuse", glm::value_ptr(glm::vec3(0.4, 0.32, 0.02)));
+				shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.specular", glm::value_ptr(glm::vec3(0.6, 0.58, 0.03)));
+				shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].position", glm::value_ptr(positionsCol));
+				shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].constant", 1.0);
+				shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].linear", 0.09);
+				shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].quadratic", 0.02);
+			}
+			
 			 /*******************************************
 			  * Terrain Cesped
 			  *******************************************/
@@ -861,16 +903,16 @@ void applicationLoop() {
 			modelMatrixGhostBody = glm::scale(modelMatrixGhostBody, glm::vec3(0.5, 0.5, 0.5));
 			modelGhost.render(modelMatrixGhostBody);
 
-			// Model Girl
-			modelMatrixGirl[3][1] = terrain.getHeightTerrain(modelMatrixGirl[3][0], modelMatrixGirl[3][2]);
-			glm::mat4 modelMatrixGirlBody = glm::mat4(modelMatrixGirl);
-			modelMatrixGirlBody = glm::scale(modelMatrixGirlBody, glm::vec3(0.01, 0.01, 0.01));
-			girlModelAnimate.render(modelMatrixGirlBody);
+			// Model Guard
+			modelMatrixGuard[3][1] = terrain.getHeightTerrain(modelMatrixGuard[3][0], modelMatrixGuard[3][2]);
+			glm::mat4 modelMatrixGuardBody = glm::mat4(modelMatrixGuard);
+			modelMatrixGuardBody = glm::scale(modelMatrixGuardBody, glm::vec3(0.01, 0.01, 0.01));
+			GuardModelAnimate.render(modelMatrixGuardBody);
 
 			/*************************
 			* Ray in Girl direction
-			**************************/
-			glm::mat4 modelMatrixRayGirl = glm::mat4(modelMatrixGirl);
+			*************************
+			glm::mat4 modelMatrixRayGirl = glm::mat4(modelMatrixGuard);
 			modelMatrixRayGirl = glm::translate(modelMatrixRayGirl, glm::vec3(0.0, 1.0, 0.0));
 			glm::vec3 rayDirectionGirl = glm::normalize(glm::vec3(modelMatrixRayGirl[2]));
 			glm::vec3 oriGirl = glm::vec3(modelMatrixRayGirl[3]);
@@ -882,6 +924,7 @@ void applicationLoop() {
 			cylinderRay.render(modelMatrixRayGirl);
 
 
+			*/
 			/*******************************************
 			 * Creacion de colliders
 			 * IMPORTANT do this before interpolations
@@ -890,24 +933,28 @@ void applicationLoop() {
 			 // Colision de la camara, no se ve porque la cámara está dentro de la esfera
 			AbstractModel::SBB cameraCollider;
 			glm::mat4 modelMatrixColliderCamera = glm::mat4(1.0);
-			modelMatrixColliderCamera[3] = glm::vec4(glm::vec3(modelMatrixGirl[3]) + glm::vec3(modelMatrixGirl[0]) * targetOffset.x + glm::vec3(modelMatrixGirl[1]) * targetOffset.y + camera->getFront() * (-distanceFromTarget + 1), 1);
-			modelMatrixColliderCamera = glm::translate(modelMatrixColliderCamera, modelEsfera.getSbb().c);
+			modelMatrixColliderCamera[3] = glm::vec4(glm::vec3(modelMatrixGuard[3]) + glm::vec3(modelMatrixGuard[0]) * targetOffset.x + glm::vec3(modelMatrixGuard[1]) * targetOffset.y + camera->getFront() * (-distanceFromTarget + 1), 1);
+			modelMatrixColliderCamera = glm::translate(modelMatrixColliderCamera, modelMoneda.getSbb().c);
 			cameraCollider.c = glm::vec3(modelMatrixColliderCamera[3]);
-			cameraCollider.ratio = modelEsfera.getSbb().ratio * 0.6;
+			cameraCollider.ratio = modelMoneda.getSbb().ratio * 0.6;
 			addOrUpdateColliders(collidersSBB, "camera", cameraCollider, modelMatrixColliderCamera);
 
-			//Collider de Girl
-			AbstractModel::OBB girlCollider;
-			glm::mat4 modelMatrixColliderGirl = glm::mat4(modelMatrixGirl);
-			//modelMatrixColliderGirl = glm::rotate(modelMatrixColliderGirl, glm::radians(-90.0f), glm::vec3(1.0, 0.0, 0.0));
-			girlCollider.u = glm::quat_cast(modelMatrixColliderGirl);
-			modelMatrixColliderGirl = glm::scale(modelMatrixColliderGirl, glm::vec3(0.01));
-			modelMatrixColliderGirl = glm::translate(modelMatrixColliderGirl, girlModelAnimate.getObb().c);
-			girlCollider.c = glm::vec3(modelMatrixColliderGirl[3]);
-			girlCollider.e = girlModelAnimate.getObb().e * glm::vec3(0.005, 0.015, 0.01) * glm::vec3(0.785, 0.785, 0.785);
-			addOrUpdateColliders(collidersOBB, "girl", girlCollider, modelMatrixGirl);
+			//Collider de Guard
+			AbstractModel::OBB guardCollider;
+			glm::mat4 modelMatrixColliderGuard = glm::mat4(modelMatrixGuard);
+			//modelMatrixColliderGuard = glm::rotate(modelMatrixColliderGuard, glm::radians(-90.0f), glm::vec3(1.0, 0.0, 0.0));
+			guardCollider.u = glm::quat_cast(modelMatrixColliderGuard);
+			modelMatrixColliderGuard = glm::scale(modelMatrixColliderGuard, glm::vec3(0.01));
+			modelMatrixColliderGuard = glm::translate(modelMatrixColliderGuard, GuardModelAnimate.getObb().c);
+			guardCollider.c = glm::vec3(modelMatrixColliderGuard[3]);
+			guardCollider.e = GuardModelAnimate.getObb().e * glm::vec3(0.005, 0.015, 0.01) * glm::vec3(0.785, 0.785, 0.785);
+			addOrUpdateColliders(collidersOBB, "guard", guardCollider, modelMatrixGuard);
 			maze_ptr->DisplayMaze(modelNodo, modelPared, modelAntorcha, collidersOBB);
-			gameSystem.UpdateCollectables(collectables, girlCollider);
+			endGame=gameSystem.UpdateCollectables(collectables, guardCollider);
+
+			if (endGame == 1) {
+				modelText->render("Juego terminado, gracias por jugar", -0.1, 0,40, 1.0, 1.0, 0.0, 1.0);
+			}
 
 			/*******************************************
 			 * Render de colliders
@@ -989,7 +1036,7 @@ void applicationLoop() {
 					{
 						//std::cout << "Collision " << it->first << " with " << jt->first << std::endl;
 						isCollision = true;
-						if (it->first == "camera" && jt->first == "girl")
+						if (it->first == "camera" && jt->first == "guard")
 						{
 							isCollision = false;
 						}
@@ -1014,10 +1061,10 @@ void applicationLoop() {
 					}
 					else
 					{
-						if (it->first.compare("girl") == 0)
+						if (it->first.compare("guard") == 0)
 						{
 							//	std::cout << "Collision " << it->first << " with " << jt->first << std::endl;
-							modelMatrixGirl = std::get<1>(it->second);
+							modelMatrixGuard = std::get<1>(it->second);
 						}
 					}
 				}
@@ -1029,9 +1076,9 @@ void applicationLoop() {
 					}
 					else
 					{
-						if (jt->first.compare("girl") == 0)
+						if (jt->first.compare("guard") == 0)
 						{
-							modelMatrixGirl = std::get<1>(jt->second);
+							modelMatrixGuard = std::get<1>(jt->second);
 						}
 					}
 
@@ -1067,7 +1114,7 @@ void applicationLoop() {
 
 			/********************************************
 			* Prueba de colision Rayo
-			*********************************************/
+			********************************************
 			for (std::map<std::string, std::tuple<AbstractModel::SBB, glm::mat4, glm::mat4> >::iterator it =
 				collidersSBB.begin(); it != collidersSBB.end(); it++)
 			{
@@ -1085,7 +1132,7 @@ void applicationLoop() {
 				{
 					//std::cout << "Colision " << it->first << " with " << "Ray" << std::endl;
 				}
-			}
+			}*/
 			// Constantes de animaciones
 			animationIndex = 1;
 		}
@@ -1099,16 +1146,16 @@ void applicationLoop() {
 			rotGhost = 0;
 			Ghost = Ghost + 0.1f;
 			if (Ghost > 25) {
-				GhostStates = 1;
+				GhostStates = 1;+
 				rotGhost = 180;
 			}
 			break;
 
 		case 1:
-			//Ghost = Ghost - 0.2f;
-			//if (Ghost < 5) {
-				//GhostStates = 0;
-			//}
+			Ghost = Ghost - 0.2f;
+			if (Ghost < 5) {
+				GhostStates = 0;
+			}
 			break;
 
 		}
@@ -1122,12 +1169,9 @@ void applicationLoop() {
 
 //Función main
 int main(int argc, char** argv) {
-	init(800, 700, "Window GLFW", false);
+	init(1250, 1100, "Maze", false);
 	applicationLoop();
 	destroy();
-	
-
-
 	return 1;
 }
 
