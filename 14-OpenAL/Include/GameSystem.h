@@ -6,7 +6,7 @@ class GameSystem
 public:
 	bool GameCompleted;
 	int nextCollectable;
-	int currentState = 0; // 0 - MainMenú
+	int currentState = 0; // 0 - MainMenú 
 
 	GameSystem(std::vector<Collectable>& collectables)
 	{
@@ -17,19 +17,32 @@ public:
 		nextCollectable = 0;
 	}
 
-	int UpdateCollectables(std::vector<Collectable>& collectables, AbstractModel::OBB& character)
+	void UpdateGameSystem(std::vector<Collectable>& collectables, AbstractModel::OBB& character, FontTypeRendering::FontTypeRendering* fontRendering)
 	{
-		if (GameCompleted)
+		switch (currentState)
 		{
-			std::cout << "Recolectables completos" << std::endl;
-			return 1;
+		case 0:
+			break;
+		case 1:
+			UpdateCollectables(collectables, character, fontRendering);
+			if (GameCompleted)
+			{
+				currentState++;
+				nextCollectable = 0;
+			}
+			break;
+		case 2:
+			fontRendering->render("Juego terminado, gracias por jugar", -0.1, 0, 40, 1.0, 1.0, 0.0, 1.0);
+			break;
 		}
+	}
 
+	void UpdateCollectables(std::vector<Collectable>& collectables, AbstractModel::OBB& character, FontTypeRendering::FontTypeRendering* fontRendering)
+	{
 		collectables[nextCollectable].Effect(); 
 		bool revision = CheckCollectable(collectables[nextCollectable], character);
 
 		GameCompleted = revision && nextCollectable >= collectables.size();
-		return 0;
 	}
 
 	bool CheckCollectable(Collectable& collectable, AbstractModel::OBB& character)

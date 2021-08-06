@@ -112,7 +112,7 @@ int endGame;
 
 //vector posiciones de coleccionables
 std::vector<Collectable> collectables = {
-	Collectable(&modelMoneda, glm::vec3(2 * mazeCellSize, 2, 2 * mazeCellSize)),
+	Collectable(&modelMoneda, glm::vec3(0 * mazeCellSize, 2, 0 * mazeCellSize)),
 	Collectable(&modelMoneda, glm::vec3(4 * mazeCellSize, 2, 0 * mazeCellSize)),
 	Collectable(&modelMoneda, glm::vec3(0 * mazeCellSize, 2, 4 * mazeCellSize)),
 	Collectable(&modelMoneda, glm::vec3(4 * mazeCellSize, 2, 4 * mazeCellSize))
@@ -152,7 +152,7 @@ int GhostStates = 0;
 // Model matrix definitions
 glm::mat4 modelMatrixGuard = glm::mat4(1.0f);
 glm::mat4 modelMatrixGhost = glm::mat4(1.0f);
-glm::vec3 targetOffset = glm::vec3(-0.35f, 1.5f, 0);
+glm::vec3 targetOffset = glm::vec3(-0.35f, 1.85f, 0);
 
 int animationIndex = 0;
 int modelSelected = 0;
@@ -294,6 +294,8 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	camera->setPosition(glm::vec3(0.0, 0.0, 10.0));
 	camera->setDistanceFromTarget(distanceFromTarget);
 	camera->setSensitivity(1.0);
+
+	modelMatrixGuard[3] = glm::vec4(mazeCellSize * floor(mazeWidth/2), 0, mazeCellSize * floor(mazeHeight/2), 1);
 
 	// Definimos el tamanio de la imagen
 	int imageWidth, imageHeight;
@@ -669,7 +671,7 @@ bool processInput(bool continueApplication) {
 	}
 	else
 	{
-		GuardModelAnimate.setAnimationIndex(0);
+		GuardModelAnimate.setAnimationIndex(4);
 	}
 
 	glfwPollEvents();
@@ -696,7 +698,7 @@ void applicationLoop() {
 			continue;
 		}
 		lastTime = currTime;
-		TimeManager::Instance().CalculateFrameRate(false);
+		TimeManager::Instance().CalculateFrameRate(true);
 		deltaTime = TimeManager::Instance().DeltaTime;
 		psi = processInput(true);
 
@@ -779,9 +781,9 @@ void applicationLoop() {
 				modelText->render("Encuentra todas las monedas", -0.8, -0.55, 40, 0.0, 1.0, 0.0, 1.0);
 				modelText->render("Cuidado con los fantasmas!!", -0.8, -0.65, 40, 1.0, 1.0, 1.0, 1.0);
 			   modelText->render("Presiona Enter para comenzar", -0.8, -0.85, 55, 1.0, 1.0, 1.0, 1.0);
-			std::cout << "Press ENTER to start" << std::endl;
+			//std::cout << "Press ENTER to start" << std::endl;
 		}
-		else if (gameSystem.currentState == 1)
+		else if (gameSystem.currentState == 1 || gameSystem.currentState == 2)
 		{
 			//neblina configuración
 			shaderMulLighting.setVectorFloat3("fogColor", glm::value_ptr(glm::vec3(0.01, 0.01, 0.01)));
@@ -811,48 +813,54 @@ void applicationLoop() {
 			/*******************************************
 			 * Propiedades SpotLights
 			 *******************************************/
-			glm::vec3 spotPosition = glm::vec3(modelMatrixGuard[3]) + glm::vec3(0.0, 1.5, 0.2);
-			glm::vec3 dirSpotlight = camera->getFront();
+			if (!collectables[gameSystem.nextCollectable].collected) {
+			//if (true) {
+				//glm::vec3 spotPosition = glm::vec3(modelMatrixGuard[3]) + glm::vec3(0.0, 4, 0);
+				//glm::vec3 dirSpotlight = camera->getFront();
+				glm::vec3 spotPosition = collectables[gameSystem.nextCollectable].posicion + glm::vec3(0, 2, 0);
 
-			shaderMulLighting.setInt("spotLightCount", 1);
-			shaderTerrain.setInt("spotLightCount", 1);
-			shaderMulLighting.setVectorFloat3("spotLights[0].light.ambient", glm::value_ptr(glm::vec3(0.1)));
-			shaderMulLighting.setVectorFloat3("spotLights[0].light.diffuse", glm::value_ptr(glm::vec3(0.4)));
-			shaderMulLighting.setVectorFloat3("spotLights[0].light.specular", glm::value_ptr(glm::vec3(0)));
-			shaderMulLighting.setVectorFloat3("spotLights[0].position", glm::value_ptr(spotPosition));
-			shaderMulLighting.setVectorFloat3("spotLights[0].direction", glm::value_ptr(dirSpotlight));
-			shaderMulLighting.setFloat("spotLights[0].constant", 1.0);
-			shaderMulLighting.setFloat("spotLights[0].linear", 0.074);
-			shaderMulLighting.setFloat("spotLights[0].quadratic", 0.03);
-			shaderMulLighting.setFloat("spotLights[0].cutOff", cos(glm::radians(12.5f)));
-			shaderMulLighting.setFloat("spotLights[0].outerCutOff", cos(glm::radians(40.0f)));
-			shaderTerrain.setVectorFloat3("spotLights[0].light.ambient", glm::value_ptr(glm::vec3(0.1)));
-			shaderTerrain.setVectorFloat3("spotLights[0].light.diffuse", glm::value_ptr(glm::vec3(1)));
-			shaderTerrain.setVectorFloat3("spotLights[0].light.specular", glm::value_ptr(glm::vec3(0.0)));
-			shaderTerrain.setVectorFloat3("spotLights[0].position", glm::value_ptr(spotPosition));
-			shaderTerrain.setVectorFloat3("spotLights[0].direction", glm::value_ptr(dirSpotlight));
-			shaderTerrain.setFloat("spotLights[0].constant", 1.0);
-			shaderTerrain.setFloat("spotLights[0].linear", 0.074);
-			shaderTerrain.setFloat("spotLights[0].quadratic", 0.03);
-			shaderTerrain.setFloat("spotLights[0].cutOff", cos(glm::radians(12.5f)));
-			shaderTerrain.setFloat("spotLights[0].outerCutOff", cos(glm::radians(40.0f)));
+				shaderMulLighting.setInt("spotLightCount", 1);
+				shaderTerrain.setInt("spotLightCount", 1);
+				shaderMulLighting.setVectorFloat3("spotLights[0].light.ambient", glm::value_ptr(glm::vec3(0.1)));
+				shaderMulLighting.setVectorFloat3("spotLights[0].light.diffuse", glm::value_ptr(glm::vec3(1)));
+				shaderMulLighting.setVectorFloat3("spotLights[0].light.specular", glm::value_ptr(glm::vec3(0.3)));
+				shaderMulLighting.setVectorFloat3("spotLights[0].position", glm::value_ptr(spotPosition));
+				shaderMulLighting.setVectorFloat3("spotLights[0].direction", glm::value_ptr(glm::vec3(0, -1, 0)));
+				shaderMulLighting.setFloat("spotLights[0].constant", 1.0);
+				shaderMulLighting.setFloat("spotLights[0].linear", 0.074);
+				shaderMulLighting.setFloat("spotLights[0].quadratic", 0.03);
+				shaderMulLighting.setFloat("spotLights[0].cutOff", cos(glm::radians(12.5f)));
+				shaderMulLighting.setFloat("spotLights[0].outerCutOff", cos(glm::radians(40.0f)));
+				shaderTerrain.setVectorFloat3("spotLights[0].light.ambient", glm::value_ptr(glm::vec3(0.1)));
+				shaderTerrain.setVectorFloat3("spotLights[0].light.diffuse", glm::value_ptr(glm::vec3(1)));
+				shaderTerrain.setVectorFloat3("spotLights[0].light.specular", glm::value_ptr(glm::vec3(0.3)));
+				shaderTerrain.setVectorFloat3("spotLights[0].position", glm::value_ptr(spotPosition));
+				shaderTerrain.setVectorFloat3("spotLights[0].direction", glm::value_ptr(glm::vec3(0, -1, 0)));
+				shaderTerrain.setFloat("spotLights[0].constant", 1.0);
+				shaderTerrain.setFloat("spotLights[0].linear", 0.074);
+				shaderTerrain.setFloat("spotLights[0].quadratic", 0.03);
+				shaderTerrain.setFloat("spotLights[0].cutOff", cos(glm::radians(30.0f)));
+				shaderTerrain.setFloat("spotLights[0].outerCutOff", cos(glm::radians(40.0f)));
+			}
 			/*******************************************
 			 * Propiedades PointLights
 			 *******************************************/
+			glm::vec3 spotPosition = glm::vec3(modelMatrixGuard[3]) + glm::vec3(0.0, 1.5, 0.0) + camera->getFront() * 1.5f;
+
 			shaderMulLighting.setInt("pointLightCount", 1);
 			shaderTerrain.setInt("pointLightCount", 1);
 			for (int i = 0; i <= 1; i++) {
 				shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.ambient", glm::value_ptr(glm::vec3(0.2, 0.16, 0.01)));
-				shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.diffuse", glm::value_ptr(glm::vec3(0.4, 0.32, 0.02)));
+				shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.diffuse", glm::value_ptr(glm::vec3(0.4, 0.32, 0.02) * 2.0f));
 				shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.specular", glm::value_ptr(glm::vec3(0.6, 0.58, 0.03)));
-				shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].position", glm::value_ptr(positionsCol));
+				shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].position", glm::value_ptr(spotPosition));
 				shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].constant", 1.0);
 				shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].linear", 0.09);
 				shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].quadratic", 0.01);
 				shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.ambient", glm::value_ptr(glm::vec3(0.2, 0.16, 0.01)));
-				shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.diffuse", glm::value_ptr(glm::vec3(0.4, 0.32, 0.02)));
+				shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.diffuse", glm::value_ptr(glm::vec3(0.4, 0.32, 0.02) * 2.0f));
 				shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.specular", glm::value_ptr(glm::vec3(0.6, 0.58, 0.03)));
-				shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].position", glm::value_ptr(positionsCol));
+				shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].position", glm::value_ptr(spotPosition));
 				shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].constant", 1.0);
 				shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].linear", 0.09);
 				shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].quadratic", 0.02);
@@ -948,13 +956,10 @@ void applicationLoop() {
 			modelMatrixColliderGuard = glm::translate(modelMatrixColliderGuard, GuardModelAnimate.getObb().c);
 			guardCollider.c = glm::vec3(modelMatrixColliderGuard[3]);
 			guardCollider.e = GuardModelAnimate.getObb().e * glm::vec3(0.005, 0.015, 0.01) * glm::vec3(0.785, 0.785, 0.785);
+
 			addOrUpdateColliders(collidersOBB, "guard", guardCollider, modelMatrixGuard);
 			maze_ptr->DisplayMaze(modelNodo, modelPared, modelAntorcha, collidersOBB);
-			endGame=gameSystem.UpdateCollectables(collectables, guardCollider);
-
-			if (endGame == 1) {
-				modelText->render("Juego terminado, gracias por jugar", -0.1, 0,40, 1.0, 1.0, 0.0, 1.0);
-			}
+			gameSystem.UpdateGameSystem(collectables, guardCollider, modelText);
 
 			/*******************************************
 			 * Render de colliders
@@ -1146,7 +1151,7 @@ void applicationLoop() {
 			rotGhost = 0;
 			Ghost = Ghost + 0.1f;
 			if (Ghost > 25) {
-				GhostStates = 1;+
+				GhostStates = 1;
 				rotGhost = 180;
 			}
 			break;
