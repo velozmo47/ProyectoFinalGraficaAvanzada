@@ -7,24 +7,27 @@ public:
 	bool GameCompleted;
 	int nextCollectable;
 	int currentState = 0; // 0 - MainMenú 
+	std::vector<Collectable> collectables;
 
-	GameSystem(std::vector<Collectable>& collectables)
+	GameSystem(std::vector<Collectable> collectables)
 	{
+		nextCollectable = 0;
 		currentState = 0;
 		GameCompleted = false;
+		this->collectables = std::vector<Collectable>(collectables);
+
 		auto rng = std::default_random_engine{};
 		std::shuffle(std::begin(collectables), std::end(collectables), rng);
-		nextCollectable = 0;
 	}
 
-	void UpdateGameSystem(std::vector<Collectable>& collectables, AbstractModel::OBB& character, FontTypeRendering::FontTypeRendering* fontRendering)
+	void UpdateGameSystem(AbstractModel::OBB& character, FontTypeRendering::FontTypeRendering* fontRendering)
 	{
 		switch (currentState)
 		{
 		case 0:
 			break;
 		case 1:
-			UpdateCollectables(collectables, character, fontRendering);
+			UpdateCollectables(character, fontRendering);
 			if (GameCompleted)
 			{
 				currentState++;
@@ -37,7 +40,7 @@ public:
 		}
 	}
 
-	void UpdateCollectables(std::vector<Collectable>& collectables, AbstractModel::OBB& character, FontTypeRendering::FontTypeRendering* fontRendering)
+	void UpdateCollectables(AbstractModel::OBB& character, FontTypeRendering::FontTypeRendering* fontRendering)
 	{
 		collectables[nextCollectable].Effect(); 
 		bool revision = CheckCollectable(collectables[nextCollectable], character);

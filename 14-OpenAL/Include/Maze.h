@@ -11,6 +11,7 @@ private:
 	int  m_nMazeWidth;  // 40
 	int  m_nMazeHeight; // 25
 	int* m_maze;
+	Model* torch;
 	std::vector<MazeCell> mazeCells = {};
 
 	// Some bit fields for convenience
@@ -29,6 +30,8 @@ private:
 	float cellSize;
 
 public:
+	float CellSize() { return cellSize; }
+	MazeCell* GetMazeCell(int x, int y) { return &(mazeCells[y * m_nMazeWidth + x]); }
 	std::vector<glm::vec3> torchPositions = {};
 
 	std::vector<glm::vec3>& GetTorchPositions() {
@@ -130,6 +133,10 @@ public:
 
 	void CreateModelsMatrix()
 	{
+		auto offset = [&](int x, int y)
+		{
+			return (m_stack.top().second + y) * m_nMazeWidth + (m_stack.top().first + x);
+		};
 		// Matriz de celda
 		glm::mat4 modelMatrix = glm::mat4(1.0f);
 		// Draw Maze
@@ -157,6 +164,7 @@ public:
 				}
 				else
 				{
+					mazeCell->AddAdyacentCell(GetMazeCell(x, y - 1));
 					if (!bloqueoOeste)
 					{
 						mazeCell->AddPilar(0.0f, glm::vec3(xPos, 0, yPos));
@@ -173,6 +181,7 @@ public:
 				}
 				else
 				{
+					mazeCell->AddAdyacentCell(GetMazeCell(x, y + 1));
 					if (!bloqueoOeste)
 					{
 						mazeCell->AddPilar(90.0f, glm::vec3(xPos, 0, yPos));
@@ -187,10 +196,17 @@ public:
 				{
 					mazeCell->AddWall(-90.0f, glm::vec3(xPos, 0, yPos));
 				}
+				else {
+					mazeCell->AddAdyacentCell(GetMazeCell(x + 1, y));
+					
+				}
 
 				if (bloqueoOeste)
 				{
 					mazeCell->AddWall(90.0f, glm::vec3(xPos, 0, yPos));
+				}
+				else {
+					mazeCell->AddAdyacentCell(GetMazeCell(x - 1, y));
 				}
 
 				if (mazeCell->hasTorch)

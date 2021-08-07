@@ -4,6 +4,7 @@ class MazeCell
 {
 	std::vector<glm::mat4> wallsMatrix;	// pos and rotation
 	std::vector<glm::mat4> pillarsMatrix;
+	std::vector<MazeCell*> adyacentMazeCells;
 
 public:
 	int x;
@@ -17,6 +18,38 @@ public:
 		x = 0;
 		y = 0;
 		torchMatrix = glm::mat4(1.0);
+	}
+
+	std::vector<MazeCell*>& AdyacentMazeCells() 
+	{
+		return adyacentMazeCells;
+	}
+
+	MazeCell* RandomNeighboor(int xPrevious, int yPrevious)
+	{
+		if (adyacentMazeCells.size() == 1)
+		{
+			return adyacentMazeCells[0];
+		}
+
+		std::vector<MazeCell*> aux_adyacents;
+		MazeCell* neighboor;
+		for (int i = 0; i < adyacentMazeCells.size(); i++)
+		{
+			neighboor = adyacentMazeCells[i];
+			if (!(xPrevious == neighboor->x && yPrevious == neighboor->y))
+			{
+				aux_adyacents.push_back(neighboor);
+			}
+		}
+
+		neighboor = aux_adyacents[rand() % aux_adyacents.size()];
+		return neighboor;
+	}
+
+	void AddAdyacentCell(MazeCell* mazeCell)
+	{
+		adyacentMazeCells.push_back(mazeCell);
 	}
 
 	void AddWall(float rotation, glm::vec3 position)

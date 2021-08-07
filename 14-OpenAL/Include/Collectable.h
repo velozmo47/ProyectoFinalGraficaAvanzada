@@ -7,6 +7,12 @@ public:
 	AbstractModel::OBB collider;
 	bool collected;
 
+	Collectable() : model(nullptr)
+	{
+		collected = false;
+		posicion = glm::vec3();
+		modelMatrixCollider = glm::mat4(1.0);
+	}
 
 	Collectable(Model* model, glm::vec3 posicion) : model(model)
 	{
