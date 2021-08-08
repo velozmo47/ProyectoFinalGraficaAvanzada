@@ -34,8 +34,9 @@ public:
 		return collider;
 	}
 
-	void Effect()
+	void Display()
 	{
 		modelMatrixCollider = glm::rotate(modelMatrixCollider, glm::radians(1.0f), glm::vec3(0, 1, 0));
+		model->render(modelMatrixCollider);
 	}
 };

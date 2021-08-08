@@ -51,10 +51,9 @@
 // Maze
 #include "../Include/Maze.h"
 #include "../Include/Collectable.h"
+#include "../Include/PlayerCharacter.h"
 #include "../Include/GameSystem.h"
-#include "../Include/MainMenu.h"
 #include "../Include/Ghost.h"
-
 
 #define ARRAY_SIZE_IN_ELEMENTS(a) (sizeof(a)/sizeof(a[0]))
 
@@ -71,7 +70,6 @@ Shader shaderSkybox;
 Shader shaderMulLighting;
 //Shader para el terreno
 Shader shaderTerrain;
-
 
 std::shared_ptr<Camera> camera(new ThirdPersonCamera());
 float distanceFromTarget = 2.0;
@@ -95,8 +93,9 @@ Model modelMoneda;
 Model modelPared;
 Model modelAntorcha;
 Model modelGhost;
-
-Ghost ghost;
+//Ghost ghost;
+std::vector<Ghost> ghosts;
+PlayerCharacter player;
 
 //variables de laberinto
 int mazeWidth = 5;
@@ -106,19 +105,12 @@ Maze maze(mazeWidth, mazeHeight, mazeCellSize);
 Maze* maze_ptr = &maze;
 float elapsedTime;
 
-MainMenu mainMenu;
-
 glm::vec3 positionsCol;
 
 //variable de fin de juego
 int endGame;
 
-GameSystem gameSystem = GameSystem(std::vector<Collectable> {
-	Collectable(&modelMoneda, glm::vec3(0 * mazeCellSize, 2, 0 * mazeCellSize)),
-	Collectable(&modelMoneda, glm::vec3(4 * mazeCellSize, 2, 0 * mazeCellSize)),
-	Collectable(&modelMoneda, glm::vec3(0 * mazeCellSize, 2, 4 * mazeCellSize)),
-	Collectable(&modelMoneda, glm::vec3(4 * mazeCellSize, 2, 4 * mazeCellSize))
-});
+GameSystem gameSystem;
 
 //Creación de texturas
 GLuint textureCespedID, textureWallID, textureWindowID, textureHighwayID, textureLandingPadID;
@@ -147,11 +139,9 @@ std::string fileNames[6] = { "../Textures/skybox1/1.png",
 bool exitApp = false;
 int lastMousePosX, offsetX = 0;
 int lastMousePosY, offsetY = 0;
-int GhostStates = 0;
 
 // Model matrix definitions
 glm::mat4 modelMatrixGuard = glm::mat4(1.0f);
-glm::mat4 modelMatrixGhost = glm::mat4(1.0f);
 glm::vec3 targetOffset = glm::vec3(-0.35f, 1.85f, 0);
 
 int animationIndex = 0;
@@ -295,9 +285,23 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	camera->setDistanceFromTarget(distanceFromTarget);
 	camera->setSensitivity(1.0);
 
-	ghost = Ghost(&modelGhost, &terrain, glm::vec3(mazeCellSize * floor(mazeWidth / 2), 0, mazeCellSize * floor(mazeHeight / 2)));
-
 	modelMatrixGuard[3] = glm::vec4(mazeCellSize * floor(mazeWidth/2), 0, mazeCellSize * floor(mazeHeight/2), 1);
+
+	//ghost = Ghost(&modelGhost, &terrain, glm::vec3(0 * mazeCellSize, 2, 0 * mazeCellSize));
+	ghosts = std::vector<Ghost>{
+		Ghost(&modelGhost, &terrain, glm::vec3(0 * mazeCellSize, 2, 0 * mazeCellSize)),
+		Ghost(&modelGhost, &terrain, glm::vec3((mazeWidth - 1) * mazeCellSize, 2, (mazeHeight - 1) * mazeCellSize))
+	};
+
+	player = PlayerCharacter(&GuardModelAnimate);
+	gameSystem = GameSystem(std::vector<Collectable> {
+		Collectable(&modelMoneda, glm::vec3(0 * mazeCellSize, 2, 0 * mazeCellSize)),
+		Collectable(&modelMoneda, glm::vec3((mazeWidth - 1)* mazeCellSize, 2, 0 * mazeCellSize)),
+		Collectable(&modelMoneda, glm::vec3(0 * mazeCellSize, 2, (mazeHeight - 1)* mazeCellSize)),
+		Collectable(&modelMoneda, glm::vec3((mazeWidth - 1)* mazeCellSize, 2, (mazeHeight - 1)* mazeCellSize))
+		},
+		&player
+	);
 
 	// Definimos el tamanio de la imagen
 	int imageWidth, imageHeight;
@@ -615,25 +619,7 @@ bool processInput(bool continueApplication) {
 	offsetX = 0;
 	offsetY = 0;
 
-	// Seleccionar modelo
-	if (enableCountSelected && glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS) {
-		enableCountSelected = false;
-		modelSelected++;
-		if (modelSelected > 0)
-			modelSelected = 0;
-	}
-	else if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_RELEASE)
-		enableCountSelected = true;
-
-	bool keySpaceStatus = glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS;
-	if (!isJump && keySpaceStatus)
-	{
-		isJump = true;
-		tmv = 0;
-		startTimeJump = currTime;
-	}
-
-	if (modelSelected == 0 && gameSystem.currentState == 1)
+	if (gameSystem.currentState == 1)
 	{
 		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 		{
@@ -765,8 +751,6 @@ void applicationLoop() {
 		skyboxSphere.render();
 		glCullFace(oldCullFaceMode);
 		glDepthFunc(oldDepthFuncMode);
-
-		
 		
 		//estado del juego
 		if (gameSystem.currentState == 0)
@@ -800,8 +784,6 @@ void applicationLoop() {
 			shaderMulLighting.setVectorFloat3("directionalLight.light.specular", glm::value_ptr(glm::vec3(.01)));
 			shaderMulLighting.setVectorFloat3("directionalLight.direction", glm::value_ptr(glm::vec3(-1.0, 0.0, 0.0)));
 
-
-
 			/*******************************************
 			 * Propiedades Luz direccional Terrain
 			 *******************************************/
@@ -815,35 +797,33 @@ void applicationLoop() {
 			/*******************************************
 			 * Propiedades SpotLights
 			 *******************************************/
-			//if (!collectables[gameSystem.nextCollectable].collected) {
-			////if (true) {
-			//	//glm::vec3 spotPosition = glm::vec3(modelMatrixGuard[3]) + glm::vec3(0.0, 4, 0);
-			//	//glm::vec3 dirSpotlight = camera->getFront();
-			//	glm::vec3 spotPosition = collectables[gameSystem.nextCollectable].posicion + glm::vec3(0, 2, 0);
+			if (gameSystem.currentState == 1) {
+				glm::vec3 spotPosition = gameSystem.collectables.back().posicion + glm::vec3(0, 2, 0);
 
-			//	shaderMulLighting.setInt("spotLightCount", 1);
-			//	shaderTerrain.setInt("spotLightCount", 1);
-			//	shaderMulLighting.setVectorFloat3("spotLights[0].light.ambient", glm::value_ptr(glm::vec3(0.1)));
-			//	shaderMulLighting.setVectorFloat3("spotLights[0].light.diffuse", glm::value_ptr(glm::vec3(1)));
-			//	shaderMulLighting.setVectorFloat3("spotLights[0].light.specular", glm::value_ptr(glm::vec3(0.3)));
-			//	shaderMulLighting.setVectorFloat3("spotLights[0].position", glm::value_ptr(spotPosition));
-			//	shaderMulLighting.setVectorFloat3("spotLights[0].direction", glm::value_ptr(glm::vec3(0, -1, 0)));
-			//	shaderMulLighting.setFloat("spotLights[0].constant", 1.0);
-			//	shaderMulLighting.setFloat("spotLights[0].linear", 0.074);
-			//	shaderMulLighting.setFloat("spotLights[0].quadratic", 0.03);
-			//	shaderMulLighting.setFloat("spotLights[0].cutOff", cos(glm::radians(12.5f)));
-			//	shaderMulLighting.setFloat("spotLights[0].outerCutOff", cos(glm::radians(40.0f)));
-			//	shaderTerrain.setVectorFloat3("spotLights[0].light.ambient", glm::value_ptr(glm::vec3(0.1)));
-			//	shaderTerrain.setVectorFloat3("spotLights[0].light.diffuse", glm::value_ptr(glm::vec3(1)));
-			//	shaderTerrain.setVectorFloat3("spotLights[0].light.specular", glm::value_ptr(glm::vec3(0.3)));
-			//	shaderTerrain.setVectorFloat3("spotLights[0].position", glm::value_ptr(spotPosition));
-			//	shaderTerrain.setVectorFloat3("spotLights[0].direction", glm::value_ptr(glm::vec3(0, -1, 0)));
-			//	shaderTerrain.setFloat("spotLights[0].constant", 1.0);
-			//	shaderTerrain.setFloat("spotLights[0].linear", 0.074);
-			//	shaderTerrain.setFloat("spotLights[0].quadratic", 0.03);
-			//	shaderTerrain.setFloat("spotLights[0].cutOff", cos(glm::radians(30.0f)));
-			//	shaderTerrain.setFloat("spotLights[0].outerCutOff", cos(glm::radians(40.0f)));
-			//}
+				shaderMulLighting.setInt("spotLightCount", 1);
+				shaderTerrain.setInt("spotLightCount", 1);
+				shaderMulLighting.setVectorFloat3("spotLights[0].light.ambient", glm::value_ptr(glm::vec3(0.1)));
+				shaderMulLighting.setVectorFloat3("spotLights[0].light.diffuse", glm::value_ptr(glm::vec3(1)));
+				shaderMulLighting.setVectorFloat3("spotLights[0].light.specular", glm::value_ptr(glm::vec3(0.3)));
+				shaderMulLighting.setVectorFloat3("spotLights[0].position", glm::value_ptr(spotPosition));
+				shaderMulLighting.setVectorFloat3("spotLights[0].direction", glm::value_ptr(glm::vec3(0, -1, 0)));
+				shaderMulLighting.setFloat("spotLights[0].constant", 1.0);
+				shaderMulLighting.setFloat("spotLights[0].linear", 0.074);
+				shaderMulLighting.setFloat("spotLights[0].quadratic", 0.03);
+				shaderMulLighting.setFloat("spotLights[0].cutOff", cos(glm::radians(12.5f)));
+				shaderMulLighting.setFloat("spotLights[0].outerCutOff", cos(glm::radians(40.0f)));
+				shaderTerrain.setVectorFloat3("spotLights[0].light.ambient", glm::value_ptr(glm::vec3(0.1)));
+				shaderTerrain.setVectorFloat3("spotLights[0].light.diffuse", glm::value_ptr(glm::vec3(1)));
+				shaderTerrain.setVectorFloat3("spotLights[0].light.specular", glm::value_ptr(glm::vec3(0.3)));
+				shaderTerrain.setVectorFloat3("spotLights[0].position", glm::value_ptr(spotPosition));
+				shaderTerrain.setVectorFloat3("spotLights[0].direction", glm::value_ptr(glm::vec3(0, -1, 0)));
+				shaderTerrain.setFloat("spotLights[0].constant", 1.0);
+				shaderTerrain.setFloat("spotLights[0].linear", 0.074);
+				shaderTerrain.setFloat("spotLights[0].quadratic", 0.03);
+				shaderTerrain.setFloat("spotLights[0].cutOff", cos(glm::radians(30.0f)));
+				shaderTerrain.setFloat("spotLights[0].outerCutOff", cos(glm::radians(40.0f)));
+			}
+
 			/*******************************************
 			 * Propiedades PointLights
 			 *******************************************/
@@ -905,34 +885,11 @@ void applicationLoop() {
 			 // Forze to enable the unit texture to 0 always ----------------- IMPORTANT
 			glActiveTexture(GL_TEXTURE0);
 
-			//// Render the Ghost
-			//modelMatrixGhost[3][1] = terrain.getHeightTerrain(modelMatrixGhost[3][0], modelMatrixGhost[3][2]);
-			//glm::mat4 modelMatrixGhostBody = glm::mat4(modelMatrixGhost);
-			//modelMatrixGhostBody = glm::rotate(modelMatrixGhostBody, glm::radians(rotGhost), glm::vec3(0.0, 1.0, 0.0));
-			////modelMatrixGhostBody = glm::translate(modelMatrixGhostBody, glm::vec3(0.0, 2.0, Ghost));
-			//modelMatrixGhostBody = glm::scale(modelMatrixGhostBody, glm::vec3(0.5, 0.5, 0.5));
-			//modelGhost.render(modelMatrixGhostBody);
-
-			ghost.UpdateGhost(&maze, deltaTime);
-
 			// Model Guard
 			modelMatrixGuard[3][1] = terrain.getHeightTerrain(modelMatrixGuard[3][0], modelMatrixGuard[3][2]);
 			glm::mat4 modelMatrixGuardBody = glm::mat4(modelMatrixGuard);
 			modelMatrixGuardBody = glm::scale(modelMatrixGuardBody, glm::vec3(0.01, 0.01, 0.01));
 			GuardModelAnimate.render(modelMatrixGuardBody);
-
-			//int x = floor(0.5f + modelMatrixGuard[3][0] / maze.CellSize());
-			//int z = floor(0.5f + modelMatrixGuard[3][2] / maze.CellSize());
-
-			//MazeCell* mazeCell = maze.GetMazeCell(x, z);
-
-			//std::cout << "X: " << std::to_string(x) << " Z: " << std::to_string(z) << std::endl;
-
-			//for (int i = 0; i < mazeCell->AdyacentMazeCells().size(); i++) {
-			//	MazeCell* adyacent = mazeCell->AdyacentMazeCells()[i];
-
-			//	std::cout << "Adyacents X: " << std::to_string(adyacent->x) << " Z: " << std::to_string(adyacent->y) << std::endl;
-			//}
 
 			/*************************
 			* Ray in Girl direction
@@ -947,9 +904,8 @@ void applicationLoop() {
 			modelMatrixRayGirl = glm::rotate(modelMatrixRayGirl, glm::radians(90.0f), glm::vec3(1.0, 0.0, 0.0));
 			modelMatrixRayGirl = glm::scale(modelMatrixRayGirl, glm::vec3(1.0, 10.0, 1.0));
 			cylinderRay.render(modelMatrixRayGirl);
-
-
 			*/
+
 			/*******************************************
 			 * Creacion de colliders
 			 * IMPORTANT do this before interpolations
@@ -965,25 +921,21 @@ void applicationLoop() {
 			addOrUpdateColliders(collidersSBB, "camera", cameraCollider, modelMatrixColliderCamera);
 
 			//Collider de Guard
-			AbstractModel::OBB guardCollider;
 			glm::mat4 modelMatrixColliderGuard = glm::mat4(modelMatrixGuard);
-			//modelMatrixColliderGuard = glm::rotate(modelMatrixColliderGuard, glm::radians(-90.0f), glm::vec3(1.0, 0.0, 0.0));
-			guardCollider.u = glm::quat_cast(modelMatrixColliderGuard);
+			player.PlayerCollider().u = glm::quat_cast(modelMatrixColliderGuard);
 			modelMatrixColliderGuard = glm::scale(modelMatrixColliderGuard, glm::vec3(0.01));
 			modelMatrixColliderGuard = glm::translate(modelMatrixColliderGuard, GuardModelAnimate.getObb().c);
-			guardCollider.c = glm::vec3(modelMatrixColliderGuard[3]);
-			guardCollider.e = GuardModelAnimate.getObb().e * glm::vec3(0.005, 0.015, 0.01) * glm::vec3(0.785, 0.785, 0.785);
+			player.PlayerCollider().c = glm::vec3(modelMatrixColliderGuard[3]);
+			player.PlayerCollider().e = GuardModelAnimate.getObb().e * glm::vec3(0.005, 0.015, 0.01) * glm::vec3(0.785, 0.785, 0.785);
+			addOrUpdateColliders(collidersOBB, "guard", player.PlayerCollider(), modelMatrixGuard);
 
-			addOrUpdateColliders(collidersOBB, "guard", guardCollider, modelMatrixGuard);
+			for (int i = 0; i < ghosts.size(); i++)
+			{
+				ghosts[i].UpdateGhost(&maze, deltaTime, &gameSystem);
+			}
+			//ghost.UpdateGhost(&maze, deltaTime, &gameSystem);
 			maze_ptr->DisplayMaze(modelNodo, modelPared, modelAntorcha, collidersOBB);
-			gameSystem.UpdateGameSystem(guardCollider, modelText);
-
-			//float xPos = modelMatrixGuard[3][0];
-			//float zPos = modelMatrixGuard[3][2];
-			//xPos = floor(0.5f + xPos/mazeCellSize);
-			//zPos = floor(0.5f + zPos/mazeCellSize);
-
-			//std::cout << "X: " << std::to_string(xPos) << " Z: " << std::to_string(zPos) << std::endl;
+			gameSystem.UpdateGameSystem(&player, modelText);
 
 			/*******************************************
 			 * Render de colliders
@@ -998,6 +950,14 @@ void applicationLoop() {
 			 //	boxCollider.enableWireMode();
 			 //	boxCollider.render(matrixCollider);
 			 //}
+
+			 //glm::mat4 matrixCollider = glm::mat4(1.0);
+			 //matrixCollider = glm::translate(matrixCollider, ghost.Collider().c);
+			 //matrixCollider = matrixCollider * glm::mat4(ghost.Collider().u);
+			 //matrixCollider = glm::scale(matrixCollider, ghost.Collider().e * 2.0f);
+			 //boxCollider.setColor(glm::vec4(1.0, 1.0, 1.0, 1.0));
+			 //boxCollider.enableWireMode();
+			 //boxCollider.render(matrixCollider);
 
 			 //for (std::map<std::string, std::tuple<AbstractModel::SBB, glm::mat4, glm::mat4> >::iterator it =
 			 //		collidersSBB.begin(); it != collidersSBB.end(); it++) {
@@ -1162,39 +1122,15 @@ void applicationLoop() {
 					//std::cout << "Colision " << it->first << " with " << "Ray" << std::endl;
 				}
 			}*/
+
 			// Constantes de animaciones
 			animationIndex = 1;
 		}
-
-		/*******************************************
-		 * State machines
-		 *******************************************/
-
-		//switch (GhostStates) {
-		//case 0:
-		//	rotGhost = 0;
-		//	Ghost = Ghost + 0.1f;
-		//	if (Ghost > 25) {
-		//		GhostStates = 1;
-		//		rotGhost = 180;
-		//	}
-		//	break;
-
-		//case 1:
-		//	Ghost = Ghost - 0.2f;
-		//	if (Ghost < 5) {
-		//		GhostStates = 0;
-		//	}
-		//	break;
-
-		//}
 		glfwSwapBuffers(window);
 	}
 }
 
 //funcion para renderizado de texto
-
-
 
 //Función main
 int main(int argc, char** argv) {
