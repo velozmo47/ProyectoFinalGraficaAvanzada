@@ -21,6 +21,7 @@ public:
 		Ghost(nullptr, nullptr, glm::vec3(0.0));
 	}
 
+
 	Ghost(Model* model, Terrain* terrain, glm::vec3 position) : model(model), terrain(terrain)
 	{
 		this->model = model;
@@ -99,6 +100,7 @@ public:
 			ghostState = 2;
 			coolDown = 0;
 			gameSystem->LostCollectable();
+			
 		}
 	}
 

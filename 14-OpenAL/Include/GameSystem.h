@@ -6,6 +6,7 @@ class GameSystem
 public:
 	bool GameCompleted;
 	int nextCollectable;
+	int lives=3;
 	int currentState = 0; // 0 - MainMenú 
 	std::vector<Collectable> collectables;
 	PlayerCharacter* playerCharacter;
@@ -79,10 +80,12 @@ public:
 
 	void LostCollectable()
 	{
+		lives--;
 		if (currentState == 1 && playerCharacter->collected.size() > 0)
 		{
 			collectables.insert(collectables.begin(), playerCharacter->collected.top());
 			playerCharacter->collected.pop();
+			
 		}
 	}
 };

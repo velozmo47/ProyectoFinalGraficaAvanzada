@@ -604,6 +604,48 @@ bool processInput(bool continueApplication) {
 	if (exitApp || glfwWindowShouldClose(window) != 0) {
 		return false;
 	}
+	if (glfwJoystickPresent(GLFW_JOYSTICK_1) == GL_TRUE) {
+		std::cout << "Esta presente el joystick" << std::endl;
+		int axesCount, buttonCount;
+		const float* axes = glfwGetJoystickAxes(GLFW_JOYSTICK_1, &axesCount);
+		std::cout << "Número de ejes disponibles :=>" << axesCount << std::endl;
+		std::cout << "Left Stick X axis: " << axes[0] << std::endl;
+		std::cout << "Left Stick Y axis: " << axes[1] << std::endl;
+		std::cout << "Left Trigger/L2: " << axes[2] << std::endl;
+		std::cout << "Right Stick X axis: " << axes[3] << std::endl;
+		std::cout << "Right Stick Y axis: " << axes[4] << std::endl;
+		std::cout << "Right Trigger/R2: " << axes[5] << std::endl;
+
+		if (fabs(axes[1]) > 0.2) {
+			modelMatrixGuard = glm::translate(modelMatrixGuard,glm::vec3(0, 0, -axes[1] * 0.1));
+			animationIndex = 0;
+		}
+		if (fabs(axes[0]) > 0.2) {
+			modelMatrixGuard = glm::rotate(modelMatrixGuard,glm::radians(-axes[0] * 0.5f), glm::vec3(0, 1, 0));
+			animationIndex = 0;
+		}
+
+		if (fabs(axes[3]) > 0.2) {
+			camera->mouseMoveCamera(axes[3], 0.0, deltaTime);
+		}
+		if (fabs(axes[4]) > 0.2) {
+			camera->mouseMoveCamera(0.0, axes[4], deltaTime);
+		}
+
+		const unsigned char* buttons = glfwGetJoystickButtons(GLFW_JOYSTICK_1,
+			&buttonCount);
+		std::cout << "Número de botones disponibles :=>" << buttonCount
+			<< std::endl;
+		if (buttons[0] == GLFW_PRESS)
+			std::cout << "Se presiona x" << std::endl;
+
+		if (!isJump && buttons[0] == GLFW_PRESS) {
+			isJump = true;
+			startTimeJump = currTime;
+			tmv = 0;
+		}
+	}
+
 
 	if (glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_PRESS)
 	{
@@ -613,9 +655,10 @@ bool processInput(bool continueApplication) {
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
 		modelMatrixGuard = glm::rotate(modelMatrixGuard, (float)-(offsetX * deltaTime), glm::vec3(0, 1, 0));
 	//camera->mouseMoveCamera(offsetX, 0.0, deltaTime);
-	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
+	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS){
 		//modelMatrixGuard = glm::rotate(modelMatrixGuard,(float) (offsetY * deltaTime), glm::vec3(1, 0, 0));
 		camera->mouseMoveCamera(0.0, offsetY, deltaTime);
+	}
 	offsetX = 0;
 	offsetY = 0;
 
@@ -771,6 +814,19 @@ void applicationLoop() {
 		}
 		else if (gameSystem.currentState == 1 || gameSystem.currentState == 2)
 		{
+			if (gameSystem.lives != 0)
+			{
+
+			//Cantidad de monedas y vidas que se tienen
+			int monedas;
+			monedas=gameSystem.collectables.size()-4;
+			monedas = -monedas;
+			string vidasG(std::to_string(gameSystem.lives));
+			string total(std::to_string(monedas));
+			modelText->render("monedas "+total, -0.8, -0.85, 55, 1.0, 1.0, 1.0, 1.0);
+			modelText->render("vidas "+ vidasG, 0.7, 0.6, 40, 1.0, 1.0, 1.0, 1.0);
+			
+			
 			//neblina configuración
 			shaderMulLighting.setVectorFloat3("fogColor", glm::value_ptr(glm::vec3(0.01, 0.01, 0.01)));
 			shaderTerrain.setVectorFloat3("fogColor", glm::value_ptr(glm::vec3(0.1, 0.1, 0.1)));
@@ -1126,7 +1182,14 @@ void applicationLoop() {
 			// Constantes de animaciones
 			animationIndex = 1;
 		}
-		glfwSwapBuffers(window);
+		if(gameSystem.lives==0){
+			modelText->render("Te mataron los fantasmas =(", -0.6, 0, 55, 1.0, 0.0, 0.0, 1.0);
+			modelText->render("Intentalo de nuevo", -0.3, -0.2, 45, 1.0, 0.0, 0.0, 1.0);
+		}
+
+		
+	}
+	glfwSwapBuffers(window);
 	}
 }
 
