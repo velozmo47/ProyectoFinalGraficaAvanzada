@@ -44,7 +44,7 @@ public:
 				currentState = 2;
 			break;
 		case 2:
-			fontRendering->render("Juego terminado, gracias por jugar", -0.1, 0, 40, 1.0, 1.0, 0.0, 1.0);
+			fontRendering->render("Juego terminado, gracias por jugar", -0.5, 0, 40, 1.0, 1.0, 0.0, 1.0);
 			break;
 		}
 	}

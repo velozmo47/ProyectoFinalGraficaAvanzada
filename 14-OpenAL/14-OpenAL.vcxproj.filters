@@ -47,5 +47,8 @@
     <ClInclude Include="Include\PlayerCharacter.h">
       <Filter>Archivos de encabezado</Filter>
     </ClInclude>
+    <ClInclude Include="Include\Extras.h">
+      <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

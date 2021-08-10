@@ -23,6 +23,7 @@
     <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Include\Extras.h" />
     <ClInclude Include="Include\Collectable.h" />
     <ClInclude Include="Include\GameSystem.h" />
     <ClInclude Include="Include\Ghost.h" />

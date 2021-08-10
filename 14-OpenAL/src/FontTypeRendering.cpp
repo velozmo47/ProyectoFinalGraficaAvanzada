@@ -42,7 +42,7 @@ namespace FontTypeRendering {
 	 * @param ScreenHeight Largo de ventana.
 	 */
 	FontTypeRendering::FontTypeRendering(double ScreenWidth, double ScreenHeight) {
-		FontTypeRendering::SCALEX = 2.5 / ScreenWidth;
+		FontTypeRendering::SCALEX = 2.0 / ScreenWidth;
 		FontTypeRendering::SCALEY = 2.0 / ScreenHeight;
 	}
 

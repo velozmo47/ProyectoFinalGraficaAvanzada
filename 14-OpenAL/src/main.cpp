@@ -54,6 +54,7 @@
 #include "../Include/PlayerCharacter.h"
 #include "../Include/GameSystem.h"
 #include "../Include/Ghost.h"
+#include "../Include/Extras.h"
 
 #define ARRAY_SIZE_IN_ELEMENTS(a) (sizeof(a)/sizeof(a[0]))
 
@@ -72,7 +73,7 @@ Shader shaderMulLighting;
 Shader shaderTerrain;
 
 std::shared_ptr<Camera> camera(new ThirdPersonCamera());
-float distanceFromTarget = 2.0;
+float distanceFromTarget = 1.5;
 float distanceFromTargetOffset;
 //float Ghost;
 float rotGhost = 0.0f;
@@ -93,9 +94,24 @@ Model modelMoneda;
 Model modelPared;
 Model modelAntorcha;
 Model modelGhost;
-//Ghost ghost;
+Model modelBarrel;
+Model modelBoxes;
+Model modelSkull;
+Model modelSkull2;
+Model modelShield2;
+
+//Vector de fantasmas
 std::vector<Ghost> ghosts;
 PlayerCharacter player;
+
+//Vector de barriles
+std::vector<Extras> barriles;
+
+//Vector de cráneos
+std::vector<Extras> skulls;
+
+//Vector de cajas
+std::vector<Extras> boxes;
 
 //variables de laberinto
 int mazeWidth = 5;
@@ -281,19 +297,75 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	modelGhost.loadModel("../models/ProyectoFinal/ghost.obj");
 	modelGhost.setShader(&shaderMulLighting);
 
+	//Model barril
+	modelBarrel.loadModel("../models/ProyectoFinal/Barril2.obj");
+	modelBarrel.setShader(&shaderMulLighting);
+
+	//Modelo Cajas
+	modelBoxes.loadModel("../models/ProyectoFinal/Box.obj");
+	modelBoxes.setShader(&shaderMulLighting);
+
+	//Modelo craneos
+	modelSkull.loadModel("../models/ProyectoFinal/Skull.obj");
+	modelSkull.setShader(&shaderMulLighting);
+
+	//Modelo craneos 2
+	modelSkull2.loadModel("../models/ProyectoFinal/Skull2.obj");
+	modelSkull2.setShader(&shaderMulLighting);
+
+
+
+	modelShield2.loadModel("../models/ProyectoFinal/Shield2.fbx");
+	modelShield2.setShader(&shaderMulLighting);
+
+	//Posición de la camara
 	camera->setPosition(glm::vec3(0.0, 0.0, 10.0));
 	camera->setDistanceFromTarget(distanceFromTarget);
-	camera->setSensitivity(1.0);
+	camera->setSensitivity(0.8);
 
 	modelMatrixGuard[3] = glm::vec4(mazeCellSize * floor(mazeWidth/2), 0, mazeCellSize * floor(mazeHeight/2), 1);
+	//Vector de craneos
 
-	//ghost = Ghost(&modelGhost, &terrain, glm::vec3(0 * mazeCellSize, 2, 0 * mazeCellSize));
+	skulls =std::vector<Extras>{
+		Extras(&modelSkull, &terrain, glm::vec3((2 * mazeCellSize)-0.8, 0, 1 * mazeCellSize - 2.8)),
+		Extras(&modelSkull2, &terrain, glm::vec3((2 * mazeCellSize), 0, 4 * mazeCellSize +2.4)),
+		Extras(&modelSkull2, &terrain, glm::vec3((4 * mazeCellSize)+1.2, 4, 0 * mazeCellSize +3.4)),
+		Extras(&modelSkull, &terrain, glm::vec3((0 * mazeCellSize), 0, 2 * mazeCellSize +3)),
+		Extras(&modelSkull, &terrain, glm::vec3((1 * mazeCellSize)+0.4, 0, 3 * mazeCellSize - 1.4)),
+		Extras(&modelSkull2, &terrain, glm::vec3((0 * mazeCellSize)-3.2, 0, 0 * mazeCellSize - 2.4)),
+		Extras(&modelShield2, &terrain, glm::vec3((3 * mazeCellSize)-2.2, 0.1, 3 * mazeCellSize - 2)),
+		Extras(&modelShield2, &terrain, glm::vec3((4 * mazeCellSize)+1.5, 0.1, 4 * mazeCellSize - 3.5)),
+		
+	};
+	
+
+	//Vector de cajas
+	boxes = std::vector<Extras>{
+		Extras(&modelBoxes,&terrain, glm::vec3((1 * mazeCellSize)+3,0, 0 * mazeCellSize - 3)),
+		Extras(&modelBoxes,&terrain, glm::vec3((0 * mazeCellSize)-3.2, 0 , mazeCellSize-2)),
+		Extras(&modelBoxes,&terrain, glm::vec3((2 * mazeCellSize) - 3,0, 2 * mazeCellSize - 2)),
+		Extras(&modelBoxes,&terrain, glm::vec3(((mazeWidth - 1)* mazeCellSize-3.5), 2, 3 * mazeCellSize-3))
+	};
+	//Vector de fantasmas
 	ghosts = std::vector<Ghost>{
 		Ghost(&modelGhost, &terrain, glm::vec3(0 * mazeCellSize, 2, 0 * mazeCellSize)),
 		Ghost(&modelGhost, &terrain, glm::vec3((mazeWidth - 1) * mazeCellSize, 2, (mazeHeight - 1) * mazeCellSize))
 	};
 
+	//Vector de barriles
+	barriles = std::vector<Extras>{
+		Extras(&modelBarrel,&terrain, glm::vec3((1 * mazeCellSize)-3,0, 0 * mazeCellSize+3)),
+		Extras(&modelBarrel,&terrain, glm::vec3((3 * mazeCellSize) -2,0, 1 * mazeCellSize - 3)),
+		Extras(&modelBarrel,&terrain, glm::vec3((2 * mazeCellSize) - 2,0, 4 * mazeCellSize + 3)),
+		Extras(&modelBarrel,&terrain, glm::vec3((2 * mazeCellSize) + 2,0, 1 * mazeCellSize - 2.8)),
+		Extras(&modelBarrel,&terrain, glm::vec3((4 * mazeCellSize) - 3,0, 2 * mazeCellSize - 3)),
+		Extras(&modelBarrel,&terrain, glm::vec3((1 * mazeCellSize) + 1,0, 3 * mazeCellSize + 3)),
+		Extras(&modelBarrel,&terrain, glm::vec3((3 * mazeCellSize) + 2,0, 4 * mazeCellSize - 2.5))
+	};
+	//Creación de guardia
 	player = PlayerCharacter(&GuardModelAnimate);
+
+	//Vector de monedas
 	gameSystem = GameSystem(std::vector<Collectable> {
 		Collectable(&modelMoneda, glm::vec3(0 * mazeCellSize, 2, 0 * mazeCellSize)),
 		Collectable(&modelMoneda, glm::vec3((mazeWidth - 1)* mazeCellSize, 2, 0 * mazeCellSize)),
@@ -499,10 +571,6 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 		std::cout << "Failed to load texture" << std::endl;
 	// Libera la memoria de la textura
 	textureTerrainBlendMap.freeImage(bitmap);
-
-	//Creacion de objeto texto
-	modelText = new FontTypeRendering::FontTypeRendering(screenWidth,screenHeight);
-	modelText->Initialize();
 }
 
 void destroy() {
@@ -535,6 +603,14 @@ void destroy() {
 	modelMoneda.destroy();
 	modelAntorcha.destroy();
 	modelGhost.destroy();
+	modelBarrel.destroy();
+	modelBoxes.destroy();
+	modelSkull.destroy();
+	modelSkull2.destroy();
+	modelShield2.destroy();
+
+	//borrado de modelo de texto
+	modelText->~FontTypeRendering();
 
 	// Textures Delete
 	glBindTexture(GL_TEXTURE_2D, 0);
@@ -710,6 +786,9 @@ bool processInput(bool continueApplication) {
 }
 
 void applicationLoop() {
+	//Creacion de objeto texto
+	modelText = new FontTypeRendering::FontTypeRendering(screenWidth, screenHeight);
+	modelText->Initialize();
 	bool psi = true;
 
 	glm::mat4 view;
@@ -947,6 +1026,7 @@ void applicationLoop() {
 			modelMatrixGuardBody = glm::scale(modelMatrixGuardBody, glm::vec3(0.01, 0.01, 0.01));
 			GuardModelAnimate.render(modelMatrixGuardBody);
 
+
 			/*************************
 			* Ray in Girl direction
 			*************************
@@ -988,6 +1068,25 @@ void applicationLoop() {
 			for (int i = 0; i < ghosts.size(); i++)
 			{
 				ghosts[i].UpdateGhost(&maze, deltaTime, &gameSystem);
+				
+
+			}
+			
+			for (int i = 0; i < skulls.size(); i++)
+			{
+				skulls[i].RenderBarrel();
+			}
+			
+			for (int i = 0; i < barriles.size(); i++)
+			{
+				barriles[i].RenderBarrel();
+				barriles[i].UpdateCollider("barriles" + std::to_string(i),collidersOBB);
+			}
+
+			for (int i = 0; i < boxes.size(); i++)
+			{
+				boxes[i].RenderBarrel();
+				boxes[i].UpdateCollider("Box " + std::to_string(i), collidersOBB);
 			}
 			//ghost.UpdateGhost(&maze, deltaTime, &gameSystem);
 			maze_ptr->DisplayMaze(modelNodo, modelPared, modelAntorcha, collidersOBB);
@@ -1186,14 +1285,11 @@ void applicationLoop() {
 			modelText->render("Te mataron los fantasmas =(", -0.6, 0, 55, 1.0, 0.0, 0.0, 1.0);
 			modelText->render("Intentalo de nuevo", -0.3, -0.2, 45, 1.0, 0.0, 0.0, 1.0);
 		}
-
-		
 	}
 	glfwSwapBuffers(window);
+	modelText->~FontTypeRendering();
 	}
 }
-
-//funcion para renderizado de texto
 
 //Función main
 int main(int argc, char** argv) {
