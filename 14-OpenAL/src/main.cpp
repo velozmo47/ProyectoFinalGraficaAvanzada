@@ -73,7 +73,7 @@ Shader shaderMulLighting;
 Shader shaderTerrain;
 
 std::shared_ptr<Camera> camera(new ThirdPersonCamera());
-float distanceFromTarget = 1.5;
+float distanceFromTarget = 1.8;
 float distanceFromTargetOffset;
 //float Ghost;
 float rotGhost = 0.0f;
@@ -655,7 +655,8 @@ void mouseCallback(GLFWwindow* window, double xpos, double ypos) {
 }
 
 void scrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
-	distanceFromTarget -= yoffset;
+	if (distanceFromTarget - yoffset >= 0.8 && distanceFromTarget - yoffset <= 6.0)
+		distanceFromTarget -= yoffset;
 	camera->setDistanceFromTarget(distanceFromTarget);
 }
 
@@ -677,51 +678,94 @@ void mouseButtonCallback(GLFWwindow* window, int button, int state, int mod) {
 }
 
 bool processInput(bool continueApplication) {
+	bool joystickanim = FALSE;
+
 	if (exitApp || glfwWindowShouldClose(window) != 0) {
 		return false;
 	}
+	//Checar existencia de joystick
 	if (glfwJoystickPresent(GLFW_JOYSTICK_1) == GL_TRUE) {
-		std::cout << "Esta presente el joystick" << std::endl;
 		int axesCount, buttonCount;
 		const float* axes = glfwGetJoystickAxes(GLFW_JOYSTICK_1, &axesCount);
-		std::cout << "Número de ejes disponibles :=>" << axesCount << std::endl;
-		std::cout << "Left Stick X axis: " << axes[0] << std::endl;
-		std::cout << "Left Stick Y axis: " << axes[1] << std::endl;
-		std::cout << "Left Trigger/L2: " << axes[2] << std::endl;
-		std::cout << "Right Stick X axis: " << axes[3] << std::endl;
-		std::cout << "Right Stick Y axis: " << axes[4] << std::endl;
-		std::cout << "Right Trigger/R2: " << axes[5] << std::endl;
-
-		if (fabs(axes[1]) > 0.2) {
-			modelMatrixGuard = glm::translate(modelMatrixGuard,glm::vec3(0, 0, -axes[1] * 0.1));
-			animationIndex = 0;
-		}
-		if (fabs(axes[0]) > 0.2) {
-			modelMatrixGuard = glm::rotate(modelMatrixGuard,glm::radians(-axes[0] * 0.5f), glm::vec3(0, 1, 0));
-			animationIndex = 0;
-		}
-
-		if (fabs(axes[3]) > 0.2) {
-			camera->mouseMoveCamera(axes[3], 0.0, deltaTime);
-		}
-		if (fabs(axes[4]) > 0.2) {
-			camera->mouseMoveCamera(0.0, axes[4], deltaTime);
-		}
-
 		const unsigned char* buttons = glfwGetJoystickButtons(GLFW_JOYSTICK_1,
 			&buttonCount);
-		std::cout << "Número de botones disponibles :=>" << buttonCount
-			<< std::endl;
-		if (buttons[0] == GLFW_PRESS)
-			std::cout << "Se presiona x" << std::endl;
 
-		if (!isJump && buttons[0] == GLFW_PRESS) {
-			isJump = true;
-			startTimeJump = currTime;
-			tmv = 0;
+			if (buttons[7] == GLFW_PRESS) {
+				return false;
+			}
+		//*****************************************************************
+		//control de joystick caminando
+		if (fabs(axes[1]) > 0.3 && fabs(axes[1]) > 0 && buttons[5] == GLFW_RELEASE) {
+			modelMatrixGuard = glm::translate(modelMatrixGuard, glm::vec3(0, 0, +axes[1] * 5.5) * (float)deltaTime);
+			GuardModelAnimate.setAnimationIndex(0);
+			joystickanim = TRUE;
 		}
-	}
+		if (fabs(axes[1]) < 0.3 && fabs(axes[1]) > 0 && fabs(axes[0]) > 0 && fabs(axes[0]) < 0.3 && buttons[5] == GLFW_RELEASE) {
+			modelMatrixGuard = glm::rotate(modelMatrixGuard, glm::radians(-axes[0] * 5.5f), glm::vec3(0, 1, 0) * (float)deltaTime);
+			modelMatrixGuard = glm::translate(modelMatrixGuard, glm::vec3(+axes[1] * 5.5, 0, +axes[1] * 5.5) * (float)deltaTime);
+			GuardModelAnimate.setAnimationIndex(0);
+			joystickanim = TRUE;
+		}
 
+		if (fabs(axes[0]) > 0.3 && fabs(axes[0]) > 0 && buttons[5] == GLFW_RELEASE) {
+			modelMatrixGuard = glm::rotate(modelMatrixGuard, glm::radians(-axes[0] * 5.5f), glm::vec3(0, 1, 0) * (float)deltaTime);
+			GuardModelAnimate.setAnimationIndex(0);
+			joystickanim = TRUE;
+		}
+		//*****************************************************************
+		//control de joystick corriendo
+		if (fabs(axes[1]) > 0.3 && fabs(axes[1]) > 0 && buttons[5] == GLFW_PRESS) {
+			modelMatrixGuard = glm::translate(modelMatrixGuard, glm::vec3(0, 0, +axes[1] * 9.5) * (float)deltaTime);
+			GuardModelAnimate.setAnimationIndex(1);
+			joystickanim = TRUE;
+		}
+		if (fabs(axes[1]) < 0.3 && fabs(axes[1]) > 0 && fabs(axes[0]) < 0.3 && fabs(axes[0]) > 0 && buttons[5] == GLFW_PRESS) {
+			modelMatrixGuard = glm::rotate(modelMatrixGuard, glm::radians(-axes[0] * 5.5f), glm::vec3(0, 1, 0) * (float)deltaTime);
+			modelMatrixGuard = glm::translate(modelMatrixGuard, glm::vec3(+axes[1] * 9.5, 0, +axes[1] * 5.5) * (float)deltaTime);
+			GuardModelAnimate.setAnimationIndex(1);
+			joystickanim = TRUE;
+		}
+
+		if (fabs(axes[0]) > 0.3 && fabs(axes[0]) > 0 && buttons[5] == GLFW_PRESS) {
+			modelMatrixGuard = glm::rotate(modelMatrixGuard, glm::radians(-axes[0] * 5.5f), glm::vec3(0, 1, 0) * (float)deltaTime);
+			GuardModelAnimate.setAnimationIndex(1);
+			joystickanim = TRUE;
+		}
+
+		//Para inicio de juego
+		if (buttons[4] == GLFW_PRESS) {
+			gameSystem.EnterPress();
+		}
+		//si no se mueve se pone en falso la animación
+		if (fabs(axes[0]) == 0 && fabs(axes[1]) == 0) {
+			joystickanim = FALSE;
+		}
+
+		//**************************************************************
+		//Rotación de camara en y botones X y B
+		if (buttons[0] == GLFW_PRESS) {
+
+			camera->mouseMoveCamera(0.0, offsetY + 2, deltaTime);
+		}
+		if (buttons[3] == GLFW_PRESS){
+
+			camera->mouseMoveCamera(0.0, offsetY - 2, deltaTime);
+		}
+
+		//**************************************************************
+//Rotación de camara en y botones Y y A
+		if (buttons[2] == GLFW_PRESS){
+			if (distanceFromTarget >= 0.8)
+			distanceFromTarget -= 0.2;
+			camera->setDistanceFromTarget(distanceFromTarget);
+		}
+		if (buttons[1] == GLFW_PRESS) {
+			if(distanceFromTarget<=6.0)
+			distanceFromTarget += 0.2;
+			camera->setDistanceFromTarget(distanceFromTarget);
+		}
+
+	}
 
 	if (glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_PRESS)
 	{
@@ -740,47 +784,54 @@ bool processInput(bool continueApplication) {
 
 	if (gameSystem.currentState == 1)
 	{
+
+		//***********************************************************************************************
+		//Control teclas de teclado
 		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 		{
 			modelMatrixGuard = glm::rotate(modelMatrixGuard, 5.0f * (float) deltaTime, glm::vec3(0, 1, 0));
+			GuardModelAnimate.setAnimationIndex(0);
+			joystickanim = TRUE;
 		}
-		else if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 		{
 			modelMatrixGuard = glm::rotate(modelMatrixGuard, -5.0f * (float) deltaTime, glm::vec3(0, 1, 0));
+			GuardModelAnimate.setAnimationIndex(0);
+			joystickanim = TRUE;
 		}
 		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE)
 		{
-			modelMatrixGuard = glm::translate(modelMatrixGuard, glm::vec3(0.0, 0.0, 5.5) * (float) deltaTime);
+			modelMatrixGuard = glm::translate(modelMatrixGuard, glm::vec3(0.0, 0.0, 5.5) * (float)deltaTime);
 			GuardModelAnimate.setAnimationIndex(0);
+			joystickanim = TRUE;
 		}
-		else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE)
+		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE)
 		{
-			modelMatrixGuard = glm::translate(modelMatrixGuard, glm::vec3(0.0, 0.0, -5.5) * (float) deltaTime);
+			modelMatrixGuard = glm::translate(modelMatrixGuard, glm::vec3(0.0, 0.0, -5.5) * (float)deltaTime);
 			GuardModelAnimate.setAnimationIndex(0);
+			joystickanim = TRUE;
 		}
 
-		
-		else if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+
+		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
 		{
 			modelMatrixGuard = glm::translate(modelMatrixGuard, glm::vec3(0.0, 0.0, 9.5) * (float)deltaTime);
 			GuardModelAnimate.setAnimationIndex(1);
+			joystickanim = TRUE;
 		}
-		else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
 		{
 			modelMatrixGuard = glm::translate(modelMatrixGuard, glm::vec3(0.0, 0.0, -9.5) * (float)deltaTime);
 			GuardModelAnimate.setAnimationIndex(1);
+			joystickanim = TRUE;
+
 
 		}
-		else
-		{
-			GuardModelAnimate.setAnimationIndex(4);
-		}
+
 	}
-	else
-	{
+	if (joystickanim == FALSE) {
 		GuardModelAnimate.setAnimationIndex(4);
 	}
-
 	glfwPollEvents();
 	return continueApplication;
 }
@@ -877,6 +928,21 @@ void applicationLoop() {
 		//estado del juego
 		if (gameSystem.currentState == 0)
 		{
+			//Mensaje si se tiene el control conectado
+			if (glfwJoystickPresent(GLFW_JOYSTICK_1) == GL_TRUE) {
+				std::cout << "Esta presente el joystick" << std::endl;
+				modelText->render("Bienvenido al laberinto", -0.5, 0.4, 55, 1.0, 1.0, 1.0, 1.0);
+				modelText->render("Para moverte utiliza el joystick izquierdo", -0.8, 0.2, 40, 1.0, 1.0, 1.0, 1.0);
+				modelText->render("Para girar camara hacia arriba o abajo", -0.5, 0.0, 40, 1.0, 0.0, 0.0, 1.0);
+				modelText->render("Y->Mover camara arriba", -0.5, -0.1, 40, 1.0, 0.0, 0.0, 1.0);
+				modelText->render("A->Mover camara abajo", -0.5, -0.2, 40, 1.0, 0.0, 0.0, 1.0);
+				modelText->render("X->Acercar camara", -0.5, -0.3, 40, 1.0, 0.0, 0.0, 1.0);
+				modelText->render("B->Alejar camara", -0.5, -0.4, 40, 1.0, 0.0, 0.0, 1.0);
+				modelText->render("RB + movimiento joystick-> correr", -0.8, -0.55, 40, 0.0, 1.0, 0.0, 1.0);
+				modelText->render("Cuidado con los fantasmas!!", -0.8, -0.65, 40, 1.0, 1.0, 1.0, 1.0);
+				modelText->render("Presiona LB para comenzar", -0.8, -0.75, 55, 1.0, 1.0, 1.0, 1.0);
+
+			}else{
 			//modelText->render("Bienvenido al laberinto",         x,      y size, R , G  , B  , Alpha);
 			//Renderizado de texto de inicio
 			       modelText->render("Bienvenido al laberinto",  -0.5,  0.6, 55, 1.0, 1.0, 1.0, 1.0);
@@ -889,6 +955,7 @@ void applicationLoop() {
 				modelText->render("Encuentra todas las monedas", -0.8, -0.55, 40, 0.0, 1.0, 0.0, 1.0);
 				modelText->render("Cuidado con los fantasmas!!", -0.8, -0.65, 40, 1.0, 1.0, 1.0, 1.0);
 			   modelText->render("Presiona Enter para comenzar", -0.8, -0.85, 55, 1.0, 1.0, 1.0, 1.0);
+			}
 			//std::cout << "Press ENTER to start" << std::endl;
 		}
 		else if (gameSystem.currentState == 1 || gameSystem.currentState == 2)
