@@ -13,6 +13,7 @@ class Ghost {
 	float coolDown;
 	float maxCoolDown;
 
+
 public:
 	AbstractModel::OBB& Collider() { return collider; }
 
@@ -39,9 +40,17 @@ public:
 		modelMatrix[3] = glm::vec4(position, 1);
 	}
 
-	void UpdateGhost (Maze* maze, float deltaTime, GameSystem* gameSystem)
-	{
+	glm::vec3 CurrentPosition() {
+			glm::vec3 position = glm::vec3(modelMatrix[3][0], 0, modelMatrix[3][2]);
+			return position;
+	}
+
+
+	bool UpdateGhost (Maze* maze, float deltaTime, GameSystem* gameSystem)
+	{	
+		bool stateContact = false;
 		glm::vec3 currentPosition = glm::vec3(modelMatrix[3][0], 0, modelMatrix[3][2]);
+
 
 		switch (ghostState)
 		{
@@ -49,13 +58,13 @@ public:
 			UpdateObjective(currentPosition, maze, deltaTime);
 			UpdatePosition(currentPosition, deltaTime, 0.0f);
 			UpdateCollider();
-			TestPlayerContact(gameSystem);
+			stateContact=TestPlayerContact(gameSystem);
 			break;
 		case 1:
 			RotateTowardsObjective(deltaTime, currentPosition);
 			UpdatePosition(currentPosition, deltaTime, 0.0f);
 			UpdateCollider();
-			TestPlayerContact(gameSystem);
+			stateContact = TestPlayerContact(gameSystem);
 			break;
 		case 2:
 			CoolDown(deltaTime);
@@ -63,6 +72,7 @@ public:
 			UpdateCollider();
 			break;
 		}
+		return stateContact;
 	}
 
 	void CoolDown(float deltaTime)
@@ -92,7 +102,7 @@ public:
 		collider.e = model->getObb().e * glm::vec3(1.0);
 	}
 
-	void TestPlayerContact(GameSystem* gameSystem)
+	bool TestPlayerContact(GameSystem* gameSystem)
 	{
 		bool contact = testOBBOBB(gameSystem->playerCharacter->PlayerCollider(), collider);
 		if (contact)
@@ -100,8 +110,10 @@ public:
 			ghostState = 2;
 			coolDown = 0;
 			gameSystem->LostCollectable();
+
 			
 		}
+		return contact;
 	}
 
 	void RotateTowardsObjective(float deltaTime, glm::vec3& currentPosition)

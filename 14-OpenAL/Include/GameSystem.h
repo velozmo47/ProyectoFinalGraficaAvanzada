@@ -4,6 +4,7 @@
 class GameSystem
 {
 public:
+	bool collectedCoin;
 	bool GameCompleted;
 	int nextCollectable;
 	int lives=3;
@@ -51,7 +52,7 @@ public:
 
 	void UpdateCollectables(PlayerCharacter* player, FontTypeRendering::FontTypeRendering* fontRendering)
 	{
-		bool revision = CheckCollectable(collectables.back(), player);
+		collectedCoin= CheckCollectable(collectables.back(), player);
 
 		GameCompleted = collectables.size() <= 0;
 	}
