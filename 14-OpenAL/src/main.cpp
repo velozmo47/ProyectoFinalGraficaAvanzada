@@ -106,10 +106,6 @@ Model modelShield2;
 std::vector<Ghost> ghosts;
 PlayerCharacter player;
 
-
-//Vector de barriles
-std::vector<Extras> barriles;
-
 //Vector de cráneos
 std::vector<Extras> skulls;
 
@@ -385,22 +381,13 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	};
 
 
-	//Vector de cajas
+	//Vector de cajas y barriles
 	boxes = std::vector<Extras>{
 		Extras(&modelBoxes,&terrain, glm::vec3((1 * mazeCellSize) + 3,0, 0 * mazeCellSize - 3)),
 		Extras(&modelBoxes,&terrain, glm::vec3((0 * mazeCellSize) - 3.2, 0 , mazeCellSize - 2)),
 		Extras(&modelBoxes,&terrain, glm::vec3((2 * mazeCellSize) - 3,0, 2 * mazeCellSize - 2)),
-		Extras(&modelBoxes,&terrain, glm::vec3(((mazeWidth - 1) * mazeCellSize - 3.5), 2, 3 * mazeCellSize - 3))
-	};
-	//Vector de fantasmas
-	ghosts = std::vector<Ghost>{
-		Ghost(&modelGhost, &terrain, glm::vec3(0 * mazeCellSize, 2, 0 * mazeCellSize)),
-		Ghost(&modelGhost, &terrain, glm::vec3((mazeWidth - 1) * mazeCellSize, 2, (mazeHeight - 1) * mazeCellSize))
-	};
-
-
-	//Vector de barriles
-	barriles = std::vector<Extras>{
+		Extras(&modelBoxes,&terrain, glm::vec3(((mazeWidth - 1) * mazeCellSize - 3.5), 2, 3 * mazeCellSize - 3)),
+		//Barriles
 		Extras(&modelBarrel,&terrain, glm::vec3((1 * mazeCellSize) - 3,0, 0 * mazeCellSize + 3)),
 		Extras(&modelBarrel,&terrain, glm::vec3((3 * mazeCellSize) - 2,0, 1 * mazeCellSize - 3)),
 		Extras(&modelBarrel,&terrain, glm::vec3((2 * mazeCellSize) - 2,0, 4 * mazeCellSize + 3)),
@@ -409,6 +396,13 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 		Extras(&modelBarrel,&terrain, glm::vec3((1 * mazeCellSize) + 1,0, 3 * mazeCellSize + 3)),
 		Extras(&modelBarrel,&terrain, glm::vec3((3 * mazeCellSize) + 2,0, 4 * mazeCellSize - 2.5))
 	};
+
+	//Vector de fantasmas
+	ghosts = std::vector<Ghost>{
+		Ghost(&modelGhost, &terrain, glm::vec3(0 * mazeCellSize, 2, 0 * mazeCellSize)),
+		Ghost(&modelGhost, &terrain, glm::vec3((mazeWidth - 1) * mazeCellSize, 2, (mazeHeight - 1) * mazeCellSize))
+	};
+
 	//Creación de guardia
 	player = PlayerCharacter(&GuardModelAnimate);
 
@@ -667,7 +661,8 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	alSourcei(source[0], AL_BUFFER, buffer[0]);
 	alSourcei(source[0], AL_LOOPING, AL_FALSE);
 	alSourcef(source[0], AL_MAX_DISTANCE, 1);
-	
+
+	//Source sonido choque con fantasma
 	alSourcef(source[1], AL_PITCH, 1.0f);
 	alSourcef(source[1], AL_GAIN, 3.0f);
 	alSourcefv(source[1], AL_POSITION, source1Pos);
@@ -684,6 +679,7 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	alSourcei(source[2], AL_BUFFER, buffer[3]);
 	alSourcei(source[2], AL_LOOPING, AL_TRUE);
 	alSourcef(source[2], AL_MAX_DISTANCE, 10000);
+
 	//Source sonido fantasma
 	alSourcef(source[3], AL_PITCH, 1.0f);
 	alSourcef(source[3], AL_GAIN, 0.1f);
@@ -692,6 +688,7 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	alSourcei(source[3], AL_BUFFER, buffer[3]);
 	alSourcei(source[3], AL_LOOPING, AL_TRUE);
 	alSourcef(source[3], AL_MAX_DISTANCE, 10000);
+
 	//Sonido fondo
 	alSourcef(source[4], AL_PITCH, 1.0f);
 	alSourcef(source[4], AL_GAIN, 3.0f);
@@ -700,6 +697,7 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	alSourcei(source[4], AL_BUFFER, buffer[2]);
 	alSourcei(source[4], AL_LOOPING, AL_TRUE);
 	alSourcef(source[4], AL_MAX_DISTANCE, 10);
+
 	//Source sonido recolección de moneda
 	alSourcef(source[5], AL_PITCH, 1.0f);
 	alSourcef(source[5], AL_GAIN, 3.0f);
@@ -765,6 +763,10 @@ void destroy() {
 	// Cube Maps Delete
 	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 	glDeleteTextures(1, &skyboxTextureID);
+
+	//Delete sounds
+	alDeleteSources(NUM_SOURCES,source);
+	alDeleteBuffers(NUM_BUFFERS, buffer);
 }
 
 void reshapeCallback(GLFWwindow* Window, int widthRes, int heightRes) {
@@ -1282,16 +1284,11 @@ void applicationLoop() {
 					skulls[i].RenderBarrel();
 				}
 
-				for (int i = 0; i < barriles.size(); i++)
-				{
-					barriles[i].RenderBarrel();
-					barriles[i].UpdateCollider("barriles" + std::to_string(i), collidersOBB);
-				}
 
 				for (int i = 0; i < boxes.size(); i++)
 				{
 					boxes[i].RenderBarrel();
-					boxes[i].UpdateCollider("Box " + std::to_string(i), collidersOBB);
+					boxes[i].UpdateCollider("Cajas " + std::to_string(i), collidersOBB);
 				}
 
 				//localización de fantasmas para sonido
@@ -1532,7 +1529,6 @@ void applicationLoop() {
 			alSourcePlay(source[i]);
 		}
 	}
-	modelText->~FontTypeRendering();
 }
 }
 
