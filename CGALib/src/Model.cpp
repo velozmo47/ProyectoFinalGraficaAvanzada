@@ -58,6 +58,36 @@ void Model::render(glm::mat4 parentTrans) {
 	}
 }
 
+void Model::renderAnimation(glm::mat4 parentTrans, float animationTime) {
+	float runningTime = animationTime;
+	//float runningTime = TimeManager::Instance().DeltaTime;
+	for (GLuint i = 0; i < this->meshes.size(); i++) {
+		this->meshes[i]->setShader(this->getShader());
+		this->meshes[i]->setPosition(this->getPosition());
+		this->meshes[i]->setScale(this->getScale());
+		this->meshes[i]->setOrientation(this->getOrientation());
+		if (scene->mNumAnimations > 0) {
+			this->meshes[i]->bones->setAnimationIndex(this->animationIndex);
+			if (this->meshes[i]->bones != nullptr) {
+				shader_ptr->setInt("numBones", this->meshes[i]->bones->getNumBones());
+				std::vector<glm::mat4> transforms;
+				this->meshes[i]->bones->bonesTransform(runningTime, transforms, scene);
+				for (unsigned int j = 0; j < transforms.size(); j++) {
+					std::stringstream ss;
+					ss << "bones[" << j << "]";
+					shader_ptr->setMatrix4(ss.str(), 1, GL_FALSE,
+						glm::value_ptr(m_GlobalInverseTransform * transforms[j]));
+				}
+			}
+			else
+				parentTrans = m_GlobalInverseTransform * parentTrans;
+		}
+		this->meshes[i]->render(parentTrans);
+		glActiveTexture(GL_TEXTURE0);
+		shader_ptr->setInt("numBones", 0);
+	}
+}
+
 void Model::loadModel(const std::string & path) {
 	// Lee el archivo via ASSIMP
 	scene = importer.ReadFile(path.c_str(),

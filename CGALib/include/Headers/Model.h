@@ -46,6 +46,7 @@ public:
 	virtual ~Model();
 	void loadModel(const std::string & path);
 	void render(glm::mat4 parentTrans = glm::mat4(1.0f));
+	void renderAnimation(glm::mat4 parentTrans, float animationTime);
 	virtual bool rayPicking(glm::vec3 init, glm::vec3 end, glm::vec3 &intersection);
 	std::vector<Mesh*> getMeshes() {
 		return meshes;

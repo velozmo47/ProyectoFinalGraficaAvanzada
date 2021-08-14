@@ -2,11 +2,11 @@ using namespace std;
 
 class MazeCell
 {
+
+public:
 	std::vector<glm::mat4> wallsMatrix;	// pos and rotation
 	std::vector<glm::mat4> pillarsMatrix;
 	std::vector<MazeCell*> adyacentMazeCells;
-
-public:
 	int x;
 	int y;
 	bool hasTorch;

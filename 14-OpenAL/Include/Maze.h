@@ -177,7 +177,14 @@ public:
 
 				if (bloqueoSur)
 				{
-					mazeCell->AddWall(180.0f, glm::vec3(xPos, 0, yPos));
+					if (y == m_nMazeHeight - 1)
+					{
+						mazeCell->AddWall(180.0f, glm::vec3(xPos, 0, yPos));
+					}
+					else
+					{
+						mazeCell->AddModelMatrix(mazeCell->wallsMatrix, 180.0f, glm::vec3(xPos, 0, yPos));
+					}
 				}
 				else
 				{
@@ -203,7 +210,14 @@ public:
 
 				if (bloqueoOeste)
 				{
-					mazeCell->AddWall(90.0f, glm::vec3(xPos, 0, yPos));
+					if (x == 0)
+					{
+						mazeCell->AddWall(90.0f, glm::vec3(xPos, 0, yPos));
+					}
+					else
+					{
+						mazeCell->AddModelMatrix(mazeCell->wallsMatrix, 90.0f, glm::vec3(xPos, 0, yPos));
+					}
 				}
 				else {
 					mazeCell->AddAdyacentCell(GetMazeCell(x - 1, y));

@@ -319,7 +319,7 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	modelNodo.loadModel("../models/ProyectoFinal/NodoProy.obj");
 	modelNodo.setShader(&shaderMulLighting);
 
-	//Esfera
+	//Moneda
 	modelMoneda.loadModel("../models/ProyectoFinal/Moneda/Moneda.obj");
 	modelMoneda.setShader(&shaderMulLighting);
 
@@ -412,9 +412,9 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 			Collectable(&modelMoneda, glm::vec3((mazeWidth - 1)* mazeCellSize, 2, 0 * mazeCellSize)),
 			Collectable(&modelMoneda, glm::vec3(0 * mazeCellSize, 2, (mazeHeight - 1)* mazeCellSize)),
 			Collectable(&modelMoneda, glm::vec3((mazeWidth - 1)* mazeCellSize, 2, (mazeHeight - 1)* mazeCellSize))
-	},
-		& player
-			);
+		},
+		&player
+	);
 
 	// Definimos el tamanio de la imagen
 	int imageWidth, imageHeight;
@@ -823,7 +823,7 @@ bool processInput(bool continueApplication) {
 		return false;
 	}
 	//Checar existencia de joystick
-	if (glfwJoystickPresent(GLFW_JOYSTICK_1) == GL_TRUE) {
+	if (gameSystem.currentState == 1 && glfwJoystickPresent(GLFW_JOYSTICK_1) == GL_TRUE) {
 		int axesCount, buttonCount;
 		const float* axes = glfwGetJoystickAxes(GLFW_JOYSTICK_1, &axesCount);
 		const unsigned char* buttons = glfwGetJoystickButtons(GLFW_JOYSTICK_1,
@@ -836,38 +836,44 @@ bool processInput(bool continueApplication) {
 		//control de joystick caminando
 		if (fabs(axes[1]) > 0.3 && fabs(axes[1]) > 0 && buttons[5] == GLFW_RELEASE) {
 			modelMatrixGuard = glm::translate(modelMatrixGuard, glm::vec3(0, 0, +axes[1] * 5.5) * (float)deltaTime);
-			GuardModelAnimate.setAnimationIndex(0);
+			player.ChangeAnimationIndex(0);
+			//GuardModelAnimate.setAnimationIndex(0);
 			joystickanim = TRUE;
 		}
 		if (fabs(axes[1]) < 0.3 && fabs(axes[1]) > 0 && fabs(axes[0]) > 0 && fabs(axes[0]) < 0.3 && buttons[5] == GLFW_RELEASE) {
 			modelMatrixGuard = glm::rotate(modelMatrixGuard, glm::radians(-axes[0] * 5.5f), glm::vec3(0, 1, 0) * (float)deltaTime);
 			modelMatrixGuard = glm::translate(modelMatrixGuard, glm::vec3(+axes[1] * 5.5, 0, +axes[1] * 5.5) * (float)deltaTime);
-			GuardModelAnimate.setAnimationIndex(0);
+			player.ChangeAnimationIndex(0);
+			//GuardModelAnimate.setAnimationIndex(0);
 			joystickanim = TRUE;
 		}
 
 		if (fabs(axes[0]) > 0.3 && fabs(axes[0]) > 0 && buttons[5] == GLFW_RELEASE) {
 			modelMatrixGuard = glm::rotate(modelMatrixGuard, glm::radians(-axes[0] * 5.5f), glm::vec3(0, 1, 0) * (float)deltaTime);
-			GuardModelAnimate.setAnimationIndex(0);
+			player.ChangeAnimationIndex(0);
+			//GuardModelAnimate.setAnimationIndex(0);
 			joystickanim = TRUE;
 		}
 		//*****************************************************************
 		//control de joystick corriendo
 		if (fabs(axes[1]) > 0.3 && fabs(axes[1]) > 0 && buttons[5] == GLFW_PRESS) {
 			modelMatrixGuard = glm::translate(modelMatrixGuard, glm::vec3(0, 0, +axes[1] * 9.5) * (float)deltaTime);
-			GuardModelAnimate.setAnimationIndex(1);
+			player.ChangeAnimationIndex(1);
+			//GuardModelAnimate.setAnimationIndex(1);
 			joystickanim = TRUE;
 		}
 		if (fabs(axes[1]) < 0.3 && fabs(axes[1]) > 0 && fabs(axes[0]) < 0.3 && fabs(axes[0]) > 0 && buttons[5] == GLFW_PRESS) {
 			modelMatrixGuard = glm::rotate(modelMatrixGuard, glm::radians(-axes[0] * 5.5f), glm::vec3(0, 1, 0) * (float)deltaTime);
 			modelMatrixGuard = glm::translate(modelMatrixGuard, glm::vec3(+axes[1] * 9.5, 0, +axes[1] * 5.5) * (float)deltaTime);
-			GuardModelAnimate.setAnimationIndex(1);
+			player.ChangeAnimationIndex(1);
+			//GuardModelAnimate.setAnimationIndex(1);
 			joystickanim = TRUE;
 		}
 
 		if (fabs(axes[0]) > 0.3 && fabs(axes[0]) > 0 && buttons[5] == GLFW_PRESS) {
 			modelMatrixGuard = glm::rotate(modelMatrixGuard, glm::radians(-axes[0] * 5.5f), glm::vec3(0, 1, 0) * (float)deltaTime);
-			GuardModelAnimate.setAnimationIndex(1);
+			player.ChangeAnimationIndex(1);
+			//GuardModelAnimate.setAnimationIndex(1);
 			joystickanim = TRUE;
 		}
 
@@ -911,43 +917,46 @@ bool processInput(bool continueApplication) {
 		gameSystem.EnterPress();
 	}
 
-	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
-		modelMatrixGuard = glm::rotate(modelMatrixGuard, (float)-(offsetX * deltaTime), glm::vec3(0, 1, 0));
-	//camera->mouseMoveCamera(offsetX, 0.0, deltaTime);
-	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS){
-		//modelMatrixGuard = glm::rotate(modelMatrixGuard,(float) (offsetY * deltaTime), glm::vec3(1, 0, 0));
-		camera->mouseMoveCamera(0.0, offsetY, deltaTime);
-	}
-	offsetX = 0;
-	offsetY = 0;
-
 	if (gameSystem.currentState == 1)
 	{
+		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
+			modelMatrixGuard = glm::rotate(modelMatrixGuard, (float)-(offsetX * deltaTime), glm::vec3(0, 1, 0));
+		//camera->mouseMoveCamera(offsetX, 0.0, deltaTime);
+		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
+			//modelMatrixGuard = glm::rotate(modelMatrixGuard,(float) (offsetY * deltaTime), glm::vec3(1, 0, 0));
+			camera->mouseMoveCamera(0.0, offsetY, deltaTime);
+		}
+		offsetX = 0;
+		offsetY = 0;
 
 		//***********************************************************************************************
 		//Control teclas de teclado
 		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 		{
 			modelMatrixGuard = glm::rotate(modelMatrixGuard, 5.0f * (float) deltaTime, glm::vec3(0, 1, 0));
-			GuardModelAnimate.setAnimationIndex(0);
+			player.ChangeAnimationIndex(0);
+			//GuardModelAnimate.setAnimationIndex(0);
 			joystickanim = TRUE;
 		}
 		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 		{
 			modelMatrixGuard = glm::rotate(modelMatrixGuard, -5.0f * (float) deltaTime, glm::vec3(0, 1, 0));
-			GuardModelAnimate.setAnimationIndex(0);
+			player.ChangeAnimationIndex(0);
+			//GuardModelAnimate.setAnimationIndex(0);
 			joystickanim = TRUE;
 		}
 		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE)
 		{
 			modelMatrixGuard = glm::translate(modelMatrixGuard, glm::vec3(0.0, 0.0, 5.5) * (float)deltaTime);
-			GuardModelAnimate.setAnimationIndex(0);
+			player.ChangeAnimationIndex(0);
+			//GuardModelAnimate.setAnimationIndex(0);
 			joystickanim = TRUE;
 		}
 		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE)
 		{
 			modelMatrixGuard = glm::translate(modelMatrixGuard, glm::vec3(0.0, 0.0, -5.5) * (float)deltaTime);
-			GuardModelAnimate.setAnimationIndex(0);
+			player.ChangeAnimationIndex(0);
+			//GuardModelAnimate.setAnimationIndex(0);
 			joystickanim = TRUE;
 		}
 
@@ -955,13 +964,15 @@ bool processInput(bool continueApplication) {
 		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
 		{
 			modelMatrixGuard = glm::translate(modelMatrixGuard, glm::vec3(0.0, 0.0, 9.5) * (float)deltaTime);
-			GuardModelAnimate.setAnimationIndex(1);
+			player.ChangeAnimationIndex(1);
+			//GuardModelAnimate.setAnimationIndex(1);
 			joystickanim = TRUE;
 		}
 		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
 		{
 			modelMatrixGuard = glm::translate(modelMatrixGuard, glm::vec3(0.0, 0.0, -9.5) * (float)deltaTime);
-			GuardModelAnimate.setAnimationIndex(1);
+			player.ChangeAnimationIndex(1);
+			//GuardModelAnimate.setAnimationIndex(1);
 			joystickanim = TRUE;
 
 
@@ -969,7 +980,8 @@ bool processInput(bool continueApplication) {
 
 	}
 	if (joystickanim == FALSE) {
-		GuardModelAnimate.setAnimationIndex(4);
+		player.ChangeAnimationIndex(4);
+		//GuardModelAnimate.setAnimationIndex(4);
 	}
 	glfwPollEvents();
 	return continueApplication;
@@ -977,9 +989,11 @@ bool processInput(bool continueApplication) {
 
 void applicationLoop() {
 	glm::vec3 auxPosGhosts;
+
 	//Creacion de objeto texto
 	modelText = new FontTypeRendering::FontTypeRendering(screenWidth, screenHeight);
 	modelText->Initialize();
+
 	bool psi = true;
 
 	glm::mat4 view;
@@ -1010,12 +1024,9 @@ void applicationLoop() {
 		glm::mat4 projection = glm::perspective(glm::radians(45.0f),
 			(float)screenWidth / (float)screenHeight, 0.01f, 50.0f);
 
-		if (modelSelected == 0)
-		{
-			axis = glm::axis(glm::quat_cast(modelMatrixGuard));
-			angleTarget = glm::angle(glm::quat_cast(modelMatrixGuard));
-			target = modelMatrixGuard[3] + modelMatrixGuard[0] * targetOffset.x + modelMatrixGuard[1] * targetOffset.y;
-		}
+		axis = glm::axis(glm::quat_cast(modelMatrixGuard));
+		angleTarget = glm::angle(glm::quat_cast(modelMatrixGuard));
+		target = modelMatrixGuard[3] + modelMatrixGuard[0] * targetOffset.x + modelMatrixGuard[1] * targetOffset.y;
 
 		if (std::isnan(angleTarget))
 			angleTarget = 0.0;
@@ -1070,7 +1081,7 @@ void applicationLoop() {
 		{
 			//Mensaje si se tiene el control conectado
 			if (glfwJoystickPresent(GLFW_JOYSTICK_1) == GL_TRUE) {
-				std::cout << "Esta presente el joystick" << std::endl;
+				//std::cout << "Esta presente el joystick" << std::endl;
 				modelText->render("Bienvenido al laberinto", -0.5, 0.4, 55, 1.0, 1.0, 1.0, 1.0);
 				modelText->render("Para moverte utiliza el joystick izquierdo", -0.8, 0.2, 40, 1.0, 1.0, 1.0, 1.0);
 				modelText->render("Para girar camara hacia arriba o abajo", -0.5, 0.0, 40, 1.0, 0.0, 0.0, 1.0);
@@ -1103,7 +1114,6 @@ void applicationLoop() {
 		{
 			if (gameSystem.lives != 0)
 			{
-
 				//Cantidad de monedas y vidas que se tienen
 				int monedas;
 				monedas = gameSystem.collectables.size() - 4;
@@ -1140,37 +1150,39 @@ void applicationLoop() {
 				/*******************************************
 				 * Propiedades SpotLights
 				 *******************************************/
+
 				if (gameSystem.currentState == 1) {
 					glm::vec3 spotPosition = gameSystem.collectables.back().posicion + glm::vec3(0, 2, 0);
 
-					shaderMulLighting.setInt("spotLightCount", 1);
-					shaderTerrain.setInt("spotLightCount", 1);
-					shaderMulLighting.setVectorFloat3("spotLights[0].light.ambient", glm::value_ptr(glm::vec3(0.1)));
-					shaderMulLighting.setVectorFloat3("spotLights[0].light.diffuse", glm::value_ptr(glm::vec3(1)));
-					shaderMulLighting.setVectorFloat3("spotLights[0].light.specular", glm::value_ptr(glm::vec3(0.3)));
-					shaderMulLighting.setVectorFloat3("spotLights[0].position", glm::value_ptr(spotPosition));
-					shaderMulLighting.setVectorFloat3("spotLights[0].direction", glm::value_ptr(glm::vec3(0, -1, 0)));
-					shaderMulLighting.setFloat("spotLights[0].constant", 1.0);
-					shaderMulLighting.setFloat("spotLights[0].linear", 0.074);
-					shaderMulLighting.setFloat("spotLights[0].quadratic", 0.03);
-					shaderMulLighting.setFloat("spotLights[0].cutOff", cos(glm::radians(12.5f)));
-					shaderMulLighting.setFloat("spotLights[0].outerCutOff", cos(glm::radians(40.0f)));
-					shaderTerrain.setVectorFloat3("spotLights[0].light.ambient", glm::value_ptr(glm::vec3(0.1)));
-					shaderTerrain.setVectorFloat3("spotLights[0].light.diffuse", glm::value_ptr(glm::vec3(1)));
-					shaderTerrain.setVectorFloat3("spotLights[0].light.specular", glm::value_ptr(glm::vec3(0.3)));
-					shaderTerrain.setVectorFloat3("spotLights[0].position", glm::value_ptr(spotPosition));
-					shaderTerrain.setVectorFloat3("spotLights[0].direction", glm::value_ptr(glm::vec3(0, -1, 0)));
-					shaderTerrain.setFloat("spotLights[0].constant", 1.0);
-					shaderTerrain.setFloat("spotLights[0].linear", 0.074);
-					shaderTerrain.setFloat("spotLights[0].quadratic", 0.03);
-					shaderTerrain.setFloat("spotLights[0].cutOff", cos(glm::radians(30.0f)));
-					shaderTerrain.setFloat("spotLights[0].outerCutOff", cos(glm::radians(40.0f)));
+					//shaderMulLighting.setInt("spotLightCount", 1);
+					//shaderMulLighting.setVectorFloat3("spotLights[0].light.ambient", glm::value_ptr(glm::vec3(0.1)));
+					//shaderMulLighting.setVectorFloat3("spotLights[0].light.diffuse", glm::value_ptr(glm::vec3(1)));
+					//shaderMulLighting.setVectorFloat3("spotLights[0].light.specular", glm::value_ptr(glm::vec3(0.3)));
+					//shaderMulLighting.setVectorFloat3("spotLights[0].position", glm::value_ptr(spotPosition));
+					//shaderMulLighting.setVectorFloat3("spotLights[0].direction", glm::value_ptr(glm::vec3(0, -1, 0)));
+					//shaderMulLighting.setFloat("spotLights[0].constant", 1.0);
+					//shaderMulLighting.setFloat("spotLights[0].linear", 0.074);
+					//shaderMulLighting.setFloat("spotLights[0].quadratic", 0.03);
+					//shaderMulLighting.setFloat("spotLights[0].cutOff", cos(glm::radians(12.5f)));
+					//shaderMulLighting.setFloat("spotLights[0].outerCutOff", cos(glm::radians(40.0f)));
+
+					//shaderTerrain.setInt("spotLightCount", 1);
+					//shaderTerrain.setVectorFloat3("spotLights[0].light.ambient", glm::value_ptr(glm::vec3(0.1)));
+					//shaderTerrain.setVectorFloat3("spotLights[0].light.diffuse", glm::value_ptr(glm::vec3(1)));
+					//shaderTerrain.setVectorFloat3("spotLights[0].light.specular", glm::value_ptr(glm::vec3(0.3)));
+					//shaderTerrain.setVectorFloat3("spotLights[0].position", glm::value_ptr(spotPosition));
+					//shaderTerrain.setVectorFloat3("spotLights[0].direction", glm::value_ptr(glm::vec3(0, -1, 0)));
+					//shaderTerrain.setFloat("spotLights[0].constant", 1.0);
+					//shaderTerrain.setFloat("spotLights[0].linear", 0.074);
+					//shaderTerrain.setFloat("spotLights[0].quadratic", 0.03);
+					//shaderTerrain.setFloat("spotLights[0].cutOff", cos(glm::radians(30.0f)));
+					//shaderTerrain.setFloat("spotLights[0].outerCutOff", cos(glm::radians(40.0f)));
 				}
 
 				/*******************************************
 				 * Propiedades PointLights
 				 *******************************************/
-				glm::vec3 spotPosition = glm::vec3(modelMatrixGuard[3]) + glm::vec3(0.0, 1.5, 0.0) + camera->getFront() * 1.5f;
+				glm::vec3 pointLightPosition = glm::vec3(modelMatrixGuard[3]) + glm::vec3(0.0, 1.5, 0.0) + camera->getFront() * 1.5f;
 
 				shaderMulLighting.setInt("pointLightCount", 1);
 				shaderTerrain.setInt("pointLightCount", 1);
@@ -1178,14 +1190,14 @@ void applicationLoop() {
 					shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.ambient", glm::value_ptr(glm::vec3(0.2, 0.16, 0.01)));
 					shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.diffuse", glm::value_ptr(glm::vec3(0.4, 0.32, 0.02) * 2.0f));
 					shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.specular", glm::value_ptr(glm::vec3(0.6, 0.58, 0.03)));
-					shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].position", glm::value_ptr(spotPosition));
+					shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].position", glm::value_ptr(pointLightPosition));
 					shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].constant", 1.0);
 					shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].linear", 0.09);
 					shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].quadratic", 0.01);
 					shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.ambient", glm::value_ptr(glm::vec3(0.2, 0.16, 0.01)));
 					shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.diffuse", glm::value_ptr(glm::vec3(0.4, 0.32, 0.02) * 2.0f));
 					shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.specular", glm::value_ptr(glm::vec3(0.6, 0.58, 0.03)));
-					shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].position", glm::value_ptr(spotPosition));
+					shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].position", glm::value_ptr(pointLightPosition));
 					shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].constant", 1.0);
 					shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].linear", 0.09);
 					shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].quadratic", 0.02);
@@ -1232,8 +1244,7 @@ void applicationLoop() {
 				modelMatrixGuard[3][1] = terrain.getHeightTerrain(modelMatrixGuard[3][0], modelMatrixGuard[3][2]);
 				glm::mat4 modelMatrixGuardBody = glm::mat4(modelMatrixGuard);
 				modelMatrixGuardBody = glm::scale(modelMatrixGuardBody, glm::vec3(0.01, 0.01, 0.01));
-				GuardModelAnimate.render(modelMatrixGuardBody);
-
+				player.Render(modelMatrixGuardBody, deltaTime);
 
 				/*************************
 				* Ray in Girl direction
@@ -1500,11 +1511,47 @@ void applicationLoop() {
 				// Constantes de animaciones
 				animationIndex = 1;
 			}
+
 			if (gameSystem.lives == 0) {
+				gameSystem.currentState = 2;
 				modelText->render("Te mataron los fantasmas =(", -0.6, 0, 55, 1.0, 0.0, 0.0, 1.0);
-				modelText->render("Intentalo de nuevo", -0.3, -0.2, 45, 1.0, 0.0, 0.0, 1.0);
+				modelText->render("Enter para Intentalo de nuevo", -0.3, -0.2, 45, 1.0, 0.0, 0.0, 1.0);
 			}
 		}
+		else if (gameSystem.currentState == 3)
+		{
+			// Creacion de laberinto
+			maze = Maze (mazeWidth, mazeHeight, mazeCellSize);
+
+			// Reseteo de guardia
+			modelMatrixGuard = glm::mat4(1.0f);
+			modelMatrixGuard[3] = glm::vec4(mazeCellSize * floor(mazeWidth / 2), 0, mazeCellSize * floor(mazeHeight / 2), 1);
+
+			ghosts.clear();
+			// Creación de fantasmas
+			ghosts = std::vector<Ghost>{
+				Ghost(&modelGhost, &terrain, glm::vec3(0 * mazeCellSize, 2, 0 * mazeCellSize)),
+				Ghost(&modelGhost, &terrain, glm::vec3((mazeWidth - 1) * mazeCellSize, 2, (mazeHeight - 1) * mazeCellSize))
+			};
+
+			//Creación de guardia
+			player = PlayerCharacter(&GuardModelAnimate);
+
+			//Vector de monedas
+			gameSystem = GameSystem(
+				std::vector<Collectable> {
+					Collectable(&modelMoneda, glm::vec3(0 * mazeCellSize, 2, 0 * mazeCellSize)),
+					Collectable(&modelMoneda, glm::vec3((mazeWidth - 1)* mazeCellSize, 2, 0 * mazeCellSize)),
+					Collectable(&modelMoneda, glm::vec3(0 * mazeCellSize, 2, (mazeHeight - 1)* mazeCellSize)),
+					Collectable(&modelMoneda, glm::vec3((mazeWidth - 1)* mazeCellSize, 2, (mazeHeight - 1)* mazeCellSize))
+				},
+				& player
+			);
+
+			collidersOBB.clear();
+			collidersSBB.clear();
+		}
+
 		glfwSwapBuffers(window);
 		// Listener for the First person camera
 		listenerPos[0] = camera->getPosition().x;
@@ -1521,15 +1568,15 @@ void applicationLoop() {
 
 		for (int i = 0; i < ghosts.size(); i++) {
 			
-	}
+		}
 
-	for (unsigned int i = 0; i < sourcesPlay.size(); i++) {
-		if (sourcesPlay[i]) {
-			sourcesPlay[i] = false;
-			alSourcePlay(source[i]);
+		for (unsigned int i = 0; i < sourcesPlay.size(); i++) {
+			if (sourcesPlay[i]) {
+				sourcesPlay[i] = false;
+				alSourcePlay(source[i]);
+			}
 		}
 	}
-}
 }
 
 //Función main

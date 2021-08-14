@@ -6,7 +6,6 @@ class GameSystem
 public:
 	bool collectedCoin;
 	bool GameCompleted;
-	int nextCollectable;
 	int lives=3;
 	int currentState = 0; // 0 - MainMenú 
 	std::vector<Collectable> collectables;
@@ -20,9 +19,9 @@ public:
 	GameSystem(std::vector<Collectable> collectables, PlayerCharacter* playerCharacter) : playerCharacter(playerCharacter)
 	{
 		this->playerCharacter = playerCharacter;
-		nextCollectable = 0;
 		currentState = 0;
 		GameCompleted = false;
+		lives = 3;
 
 		auto rng = std::default_random_engine{};
 		std::shuffle(std::begin(collectables), std::end(collectables), rng);
@@ -75,17 +74,24 @@ public:
 		if (currentState == 0)
 		{
 			currentState = 1;
-			std::cout << "Inicia  el juego" << std::endl;
+			std::cout << "Inicia el juego" << std::endl;
+		}
+		if (currentState == 2 && (lives <= 0 || collectables.size() <= 0))
+		{
+			currentState = 3;
+			std::cout << "Reinicia el juego" << std::endl;
 		}
 	}
 
 	void LostCollectable()
 	{
-		lives--;
-		if (currentState == 1 && playerCharacter->collected.size() > 0)
-		{
-			collectables.insert(collectables.begin(), playerCharacter->collected.top());
-			playerCharacter->collected.pop();
+		if (currentState == 1) {
+			lives--;
+			if (playerCharacter->collected.size() > 0)
+			{
+				collectables.insert(collectables.begin(), playerCharacter->collected.top());
+				playerCharacter->collected.pop();
+			}
 			
 		}
 	}

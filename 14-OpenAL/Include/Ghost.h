@@ -32,7 +32,7 @@ public:
 		floatingHeight = (rand() % 100) / 100;
 		rotInterp = 0;
 		coolDown = 0;
-		maxCoolDown = 5.0f;
+		maxCoolDown = 10.0f;
 		yOffset = 0;
 		modelMatrix = glm::mat4(1.0);
 		nextObjective = glm::vec3(position.x, 0, position.z);
@@ -41,8 +41,8 @@ public:
 	}
 
 	glm::vec3 CurrentPosition() {
-			glm::vec3 position = glm::vec3(modelMatrix[3][0], 0, modelMatrix[3][2]);
-			return position;
+		glm::vec3 position = glm::vec3(modelMatrix[3][0], 0, modelMatrix[3][2]);
+		return position;
 	}
 
 
@@ -54,21 +54,27 @@ public:
 
 		switch (ghostState)
 		{
-		case 0:
+		case 0: // Moviendose
 			UpdateObjective(currentPosition, maze, deltaTime);
 			UpdatePosition(currentPosition, deltaTime, 0.0f);
 			UpdateCollider();
 			stateContact=TestPlayerContact(gameSystem);
 			break;
-		case 1:
+		case 1: // Rotando
 			RotateTowardsObjective(deltaTime, currentPosition);
 			UpdatePosition(currentPosition, deltaTime, 0.0f);
 			UpdateCollider();
 			stateContact = TestPlayerContact(gameSystem);
 			break;
-		case 2:
+		case 2: // Cooldown
 			CoolDown(deltaTime);
-			UpdatePosition(currentPosition, deltaTime, 5.0f);
+			modelMatrix = glm::rotate(modelMatrix, glm::radians(180.0f) * deltaTime, glm::vec3(0, 1, 0));
+			UpdatePosition(currentPosition, 0.5f * deltaTime, -3.0f);
+			UpdateCollider();
+			break;
+		case 3:
+			RotateTowardsObjective(0.5f * deltaTime, currentPosition);
+			UpdatePosition(currentPosition, 1.5f * deltaTime, 0.0f);
 			UpdateCollider();
 			break;
 		}
@@ -81,7 +87,7 @@ public:
 		if (coolDown >= maxCoolDown)
 		{
 			coolDown = 0;
-			ghostState = 1;
+			ghostState = 3;
 		}
 	}
 
@@ -110,8 +116,6 @@ public:
 			ghostState = 2;
 			coolDown = 0;
 			gameSystem->LostCollectable();
-
-			
 		}
 		return contact;
 	}
