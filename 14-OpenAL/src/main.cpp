@@ -63,6 +63,8 @@
 int screenWidth;
 int screenHeight;
 int totalSpot;
+bool walk = false;
+bool run = false;
 
 GLFWwindow* window;
 
@@ -143,18 +145,21 @@ GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
 GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
 GL_TEXTURE_CUBE_MAP_NEGATIVE_Z };
 
-std::string fileNames[6] = { "../Textures/skybox1/1.png",
-		"../Textures/skybox1/2.png",
-		"../Textures/skybox1/3.png",
-		"../Textures/skybox1/4.png",
-		"../Textures/skybox1/5.png",
-		"../Textures/skybox1/6.png" };
+std::string fileNames[6] = { "../Textures/kurt/space_lf.png",
+							"../Textures/kurt/space_rt.png",
+							"../Textures/kurt/space_up.png",
+							"../Textures/kurt/space_dn.png",
+							"../Textures/kurt/space_bk.png",
+							"../Textures/kurt/space_ft.png"
+							
+							 };
 
 
 bool exitApp = false;
 int lastMousePosX, offsetX = 0;
 int lastMousePosY, offsetY = 0;
-
+int countWalk = 0;
+int countRun=0;
 // Model matrix definitions
 glm::mat4 modelMatrixGuard = glm::mat4(1.0f);
 glm::vec3 targetOffset = glm::vec3(-0.35f, 1.85f, 0);
@@ -184,8 +189,8 @@ std::map<std::string, std::tuple<AbstractModel::SBB, glm::mat4, glm::mat4> > col
 
  // OpenAL Defines
 //Numero de buffers necesarios
-#define NUM_BUFFERS 4
-#define NUM_SOURCES 6
+#define NUM_BUFFERS 6
+#define NUM_SOURCES 8
 #define NUM_ENVIRONMENTS 1
 // Listener
 ALfloat listenerPos[] = { 0.0, 0.0, 4.0 };
@@ -215,7 +220,7 @@ ALvoid* data;
 int ch;
 ALboolean loop;
 //Vector de posiciones de fantasmas
-std::vector<bool> sourcesPlay = { false, false, true,true, true,false};
+std::vector<bool> sourcesPlay = { false, false, true,true, true,false,false,false};
 
 // Se definen todos las funciones.
 void reshapeCallback(GLFWwindow* Window, int widthRes, int heightRes);
@@ -636,6 +641,8 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	buffer[1] = alutCreateBufferFromFile("../sounds/Coins.wav");
 	buffer[2] = alutCreateBufferFromFile("../sounds/Fondo.wav");
 	buffer[3] = alutCreateBufferFromFile("../sounds/Ghost.wav");
+	buffer[4] = alutCreateBufferFromFile("../sounds/walk.wav");
+	buffer[5] = alutCreateBufferFromFile("../sounds/run.wav");
 	int errorAlut = alutGetError();
 	if (errorAlut != ALUT_ERROR_NO_ERROR) {
 		printf("- Error open files with alut %d !!\n", errorAlut);
@@ -673,7 +680,7 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 
 	//Source sonido fantasma
 	alSourcef(source[2], AL_PITCH, 1.0f);
-	alSourcef(source[2], AL_GAIN, 0.1f);
+	alSourcef(source[2], AL_GAIN, 0.3f);
 	alSourcefv(source[2], AL_POSITION, source2Pos);
 	alSourcefv(source[2], AL_VELOCITY, source2Vel);
 	alSourcei(source[2], AL_BUFFER, buffer[3]);
@@ -682,7 +689,7 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 
 	//Source sonido fantasma
 	alSourcef(source[3], AL_PITCH, 1.0f);
-	alSourcef(source[3], AL_GAIN, 0.1f);
+	alSourcef(source[3], AL_GAIN, 0.3f);
 	alSourcefv(source[3], AL_POSITION, source2Pos);
 	alSourcefv(source[3], AL_VELOCITY, source2Vel);
 	alSourcei(source[3], AL_BUFFER, buffer[3]);
@@ -691,7 +698,7 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 
 	//Sonido fondo
 	alSourcef(source[4], AL_PITCH, 1.0f);
-	alSourcef(source[4], AL_GAIN, 3.0f);
+	alSourcef(source[4], AL_GAIN, 0.6f);
 	alSourcefv(source[4], AL_POSITION, source2Pos);
 	alSourcefv(source[4], AL_VELOCITY, source2Vel);
 	alSourcei(source[4], AL_BUFFER, buffer[2]);
@@ -706,6 +713,22 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	alSourcei(source[5], AL_BUFFER, buffer[1]);
 	alSourcei(source[5], AL_LOOPING, AL_FALSE);
 	alSourcef(source[5], AL_MAX_DISTANCE, 1);
+
+	alSourcef(source[6], AL_PITCH, 1.0f);
+	alSourcef(source[6], AL_GAIN, 0.4f);
+	alSourcefv(source[6], AL_POSITION, source1Pos);
+	alSourcefv(source[6], AL_VELOCITY, source1Vel);
+	alSourcei(source[6], AL_BUFFER, buffer[4]);
+	alSourcei(source[6], AL_LOOPING, AL_FALSE);
+	alSourcef(source[6], AL_MAX_DISTANCE, 100);
+
+	alSourcef(source[7], AL_PITCH, 1.0f);
+	alSourcef(source[7], AL_GAIN, 0.4f);
+	alSourcefv(source[7], AL_POSITION, source1Pos);
+	alSourcefv(source[7], AL_VELOCITY, source1Vel);
+	alSourcei(source[7], AL_BUFFER, buffer[5]);
+	alSourcei(source[7], AL_LOOPING, AL_FALSE);
+	alSourcef(source[7], AL_MAX_DISTANCE, 100);
 }
 
 void destroy() {
@@ -828,7 +851,7 @@ bool processInput(bool continueApplication) {
 		const float* axes = glfwGetJoystickAxes(GLFW_JOYSTICK_1, &axesCount);
 		const unsigned char* buttons = glfwGetJoystickButtons(GLFW_JOYSTICK_1,
 			&buttonCount);
-
+	
 			if (buttons[7] == GLFW_PRESS) {
 				return false;
 			}
@@ -837,21 +860,34 @@ bool processInput(bool continueApplication) {
 		if (fabs(axes[1]) > 0.3 && fabs(axes[1]) > 0 && buttons[5] == GLFW_RELEASE) {
 			modelMatrixGuard = glm::translate(modelMatrixGuard, glm::vec3(0, 0, +axes[1] * 5.5) * (float)deltaTime);
 			player.ChangeAnimationIndex(0);
-			//GuardModelAnimate.setAnimationIndex(0);
+			//Conteo para animación caminando
+			if (countWalk == 0) {
+				walk = true;
+			}
+			if (countWalk == 2) {
+				walk = false;
+			}
+			countWalk++;
+			if (countWalk >= 40) {
+				countWalk = 0;
+			}
+
+
+			GuardModelAnimate.setAnimationIndex(0);
 			joystickanim = TRUE;
 		}
 		if (fabs(axes[1]) < 0.3 && fabs(axes[1]) > 0 && fabs(axes[0]) > 0 && fabs(axes[0]) < 0.3 && buttons[5] == GLFW_RELEASE) {
-			modelMatrixGuard = glm::rotate(modelMatrixGuard, glm::radians(-axes[0] * 5.5f), glm::vec3(0, 1, 0) * (float)deltaTime);
+			modelMatrixGuard = glm::rotate(modelMatrixGuard, glm::radians(-axes[0] * 3.0f), glm::vec3(0, 1, 0) * (float)deltaTime);
 			modelMatrixGuard = glm::translate(modelMatrixGuard, glm::vec3(+axes[1] * 5.5, 0, +axes[1] * 5.5) * (float)deltaTime);
-			player.ChangeAnimationIndex(0);
-			//GuardModelAnimate.setAnimationIndex(0);
+			//player.ChangeAnimationIndex(0);
+			GuardModelAnimate.setAnimationIndex(0);
 			joystickanim = TRUE;
 		}
 
 		if (fabs(axes[0]) > 0.3 && fabs(axes[0]) > 0 && buttons[5] == GLFW_RELEASE) {
-			modelMatrixGuard = glm::rotate(modelMatrixGuard, glm::radians(-axes[0] * 5.5f), glm::vec3(0, 1, 0) * (float)deltaTime);
-			player.ChangeAnimationIndex(0);
-			//GuardModelAnimate.setAnimationIndex(0);
+			modelMatrixGuard = glm::rotate(modelMatrixGuard, glm::radians(-axes[0] * 3.0f), glm::vec3(0, 1, 0) * (float)deltaTime);
+			//player.ChangeAnimationIndex(0);
+			GuardModelAnimate.setAnimationIndex(0);
 			joystickanim = TRUE;
 		}
 		//*****************************************************************
@@ -860,26 +896,47 @@ bool processInput(bool continueApplication) {
 			modelMatrixGuard = glm::translate(modelMatrixGuard, glm::vec3(0, 0, +axes[1] * 9.5) * (float)deltaTime);
 			player.ChangeAnimationIndex(1);
 			//GuardModelAnimate.setAnimationIndex(1);
+			if (countRun == 0) {
+				run = true;
+			}
+			if (countRun == 1) {
+				run = false;
+			}
+			countRun++;
+			if (countRun >= 47) {
+				countRun = 0;
+			}
 			joystickanim = TRUE;
 		}
 		if (fabs(axes[1]) < 0.3 && fabs(axes[1]) > 0 && fabs(axes[0]) < 0.3 && fabs(axes[0]) > 0 && buttons[5] == GLFW_PRESS) {
-			modelMatrixGuard = glm::rotate(modelMatrixGuard, glm::radians(-axes[0] * 5.5f), glm::vec3(0, 1, 0) * (float)deltaTime);
+			modelMatrixGuard = glm::rotate(modelMatrixGuard, glm::radians(-axes[0] * 3.3f), glm::vec3(0, 1, 0) * (float)deltaTime);
 			modelMatrixGuard = glm::translate(modelMatrixGuard, glm::vec3(+axes[1] * 9.5, 0, +axes[1] * 5.5) * (float)deltaTime);
-			player.ChangeAnimationIndex(1);
-			//GuardModelAnimate.setAnimationIndex(1);
+			//player.ChangeAnimationIndex(1);
+			GuardModelAnimate.setAnimationIndex(1);
+			if (countRun == 0) {
+				run = true;
+			}
+			if (countRun == 2) {
+				run = false;
+			}
+			countRun++;
+			if (countRun >= 47) {
+				countRun = 0;
+			}
 			joystickanim = TRUE;
 		}
 
 		if (fabs(axes[0]) > 0.3 && fabs(axes[0]) > 0 && buttons[5] == GLFW_PRESS) {
-			modelMatrixGuard = glm::rotate(modelMatrixGuard, glm::radians(-axes[0] * 5.5f), glm::vec3(0, 1, 0) * (float)deltaTime);
-			player.ChangeAnimationIndex(1);
-			//GuardModelAnimate.setAnimationIndex(1);
+			modelMatrixGuard = glm::rotate(modelMatrixGuard, glm::radians(-axes[0] * 3.0f), glm::vec3(0, 1, 0) * (float)deltaTime);
+			//player.ChangeAnimationIndex(1);
+			GuardModelAnimate.setAnimationIndex(1);
 			joystickanim = TRUE;
 		}
 
 		//Para inicio de juego
 		if (buttons[4] == GLFW_PRESS) {
 			gameSystem.EnterPress();
+			countRun = 0;
 		}
 		//si no se mueve se pone en falso la animación
 		if (fabs(axes[0]) == 0 && fabs(axes[1]) == 0) {
@@ -933,30 +990,54 @@ bool processInput(bool continueApplication) {
 		//Control teclas de teclado
 		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 		{
-			modelMatrixGuard = glm::rotate(modelMatrixGuard, 5.0f * (float) deltaTime, glm::vec3(0, 1, 0));
-			player.ChangeAnimationIndex(0);
-			//GuardModelAnimate.setAnimationIndex(0);
+			modelMatrixGuard = glm::rotate(modelMatrixGuard, 3.0f * (float)deltaTime, glm::vec3(0, 1, 0));
+			//player.ChangeAnimationIndex(0);
+			GuardModelAnimate.setAnimationIndex(0);
 			joystickanim = TRUE;
 		}
 		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 		{
-			modelMatrixGuard = glm::rotate(modelMatrixGuard, -5.0f * (float) deltaTime, glm::vec3(0, 1, 0));
-			player.ChangeAnimationIndex(0);
-			//GuardModelAnimate.setAnimationIndex(0);
+			modelMatrixGuard = glm::rotate(modelMatrixGuard, -3.0f * (float)deltaTime, glm::vec3(0, 1, 0));
+			//player.ChangeAnimationIndex(0);
+			GuardModelAnimate.setAnimationIndex(0);
 			joystickanim = TRUE;
 		}
 		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE)
 		{
 			modelMatrixGuard = glm::translate(modelMatrixGuard, glm::vec3(0.0, 0.0, 5.5) * (float)deltaTime);
-			player.ChangeAnimationIndex(0);
-			//GuardModelAnimate.setAnimationIndex(0);
+			//player.ChangeAnimationIndex(0);
+			GuardModelAnimate.setAnimationIndex(0);
+			//Conteo de sonido caminando
+			if (countWalk == 0) {
+				walk = true;
+			}
+			if (countWalk == 2) {
+				walk = false;
+			}
+			countWalk++;
+			if (countWalk >= 40) {
+				countWalk = 0;
+			}
+
 			joystickanim = TRUE;
 		}
 		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE)
 		{
 			modelMatrixGuard = glm::translate(modelMatrixGuard, glm::vec3(0.0, 0.0, -5.5) * (float)deltaTime);
-			player.ChangeAnimationIndex(0);
-			//GuardModelAnimate.setAnimationIndex(0);
+			//player.ChangeAnimationIndex(0);
+			GuardModelAnimate.setAnimationIndex(0);
+			if (countWalk == 0) {
+				walk = true;
+			}
+			if (countWalk == 2) {
+				walk = false;
+			}
+			countWalk++;
+			if (countWalk >= 40) {
+				countWalk = 0;
+			}
+
+
 			joystickanim = TRUE;
 		}
 
@@ -964,21 +1045,50 @@ bool processInput(bool continueApplication) {
 		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
 		{
 			modelMatrixGuard = glm::translate(modelMatrixGuard, glm::vec3(0.0, 0.0, 9.5) * (float)deltaTime);
-			player.ChangeAnimationIndex(1);
-			//GuardModelAnimate.setAnimationIndex(1);
+			//player.ChangeAnimationIndex(1);
+			GuardModelAnimate.setAnimationIndex(1);
 			joystickanim = TRUE;
+			if (countRun == 0) {
+				run = true;
+			}
+			if (countRun == 1) {
+				run = false;
+			}
+			countRun++;
+			if (countRun >= 47) {
+				countRun = 0;
+			}
+			
 		}
 		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
 		{
 			modelMatrixGuard = glm::translate(modelMatrixGuard, glm::vec3(0.0, 0.0, -9.5) * (float)deltaTime);
-			player.ChangeAnimationIndex(1);
-			//GuardModelAnimate.setAnimationIndex(1);
+			//player.ChangeAnimationIndex(1);
+			GuardModelAnimate.setAnimationIndex(1);
+			if (countRun == 0) {
+				run = true;
+			}
+			if (countRun == 2) {
+				run = false;
+			}
+			countRun++;
+			if (countRun >= 47) {
+				countRun = 0;
+			}
+			
+			//soundwalkcount = true;
 			joystickanim = TRUE;
-
-
 		}
-
+		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_RELEASE && glfwGetKey(window, GLFW_KEY_W) == GLFW_RELEASE && glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE) {
+			walk = false;
+			countWalk = 0;
+			countRun = 0;
+			run = false;
+		}
+		
+			
 	}
+
 	if (joystickanim == FALSE) {
 		player.ChangeAnimationIndex(4);
 		//GuardModelAnimate.setAnimationIndex(4);
@@ -1566,9 +1676,9 @@ void applicationLoop() {
 		listenerOri[5] = camera->getUp().z;
 		alListenerfv(AL_ORIENTATION, listenerOri);
 
-		for (int i = 0; i < ghosts.size(); i++) {
-			
-		}
+		sourcesPlay[6] = walk;
+		sourcesPlay[7] = run;
+
 
 		for (unsigned int i = 0; i < sourcesPlay.size(); i++) {
 			if (sourcesPlay[i]) {
