@@ -846,91 +846,135 @@ bool processInput(bool continueApplication) {
 		return false;
 	}
 	//Checar existencia de joystick
-	if (gameSystem.currentState == 1 && glfwJoystickPresent(GLFW_JOYSTICK_1) == GL_TRUE) {
+	if (glfwJoystickPresent(GLFW_JOYSTICK_1) == GL_TRUE) {
 		int axesCount, buttonCount;
 		const float* axes = glfwGetJoystickAxes(GLFW_JOYSTICK_1, &axesCount);
-		const unsigned char* buttons = glfwGetJoystickButtons(GLFW_JOYSTICK_1,
-			&buttonCount);
+		const unsigned char* buttons = glfwGetJoystickButtons(GLFW_JOYSTICK_1, &buttonCount);
+		bool moving = false, running = false;
 	
-			if (buttons[7] == GLFW_PRESS) {
-				return false;
-			}
-		//*****************************************************************
-		//control de joystick caminando
-		if (fabs(axes[1]) > 0.3 && fabs(axes[1]) > 0 && buttons[5] == GLFW_RELEASE) {
-			modelMatrixGuard = glm::translate(modelMatrixGuard, glm::vec3(0, 0, +axes[1] * 5.5) * (float)deltaTime);
-			player.ChangeAnimationIndex(0);
-			//Conteo para animación caminando
-			if (countWalk == 0) {
-				walk = true;
-			}
-			if (countWalk == 2) {
-				walk = false;
-			}
-			countWalk++;
-			if (countWalk >= 40) {
-				countWalk = 0;
-			}
-
-
-			GuardModelAnimate.setAnimationIndex(0);
-			joystickanim = TRUE;
-		}
-		if (fabs(axes[1]) < 0.3 && fabs(axes[1]) > 0 && fabs(axes[0]) > 0 && fabs(axes[0]) < 0.3 && buttons[5] == GLFW_RELEASE) {
-			modelMatrixGuard = glm::rotate(modelMatrixGuard, glm::radians(-axes[0] * 3.0f), glm::vec3(0, 1, 0) * (float)deltaTime);
-			modelMatrixGuard = glm::translate(modelMatrixGuard, glm::vec3(+axes[1] * 5.5, 0, +axes[1] * 5.5) * (float)deltaTime);
-			//player.ChangeAnimationIndex(0);
-			GuardModelAnimate.setAnimationIndex(0);
-			joystickanim = TRUE;
+		if (buttons[7] == GLFW_PRESS) {
+			return false;
 		}
 
-		if (fabs(axes[0]) > 0.3 && fabs(axes[0]) > 0 && buttons[5] == GLFW_RELEASE) {
-			modelMatrixGuard = glm::rotate(modelMatrixGuard, glm::radians(-axes[0] * 3.0f), glm::vec3(0, 1, 0) * (float)deltaTime);
-			//player.ChangeAnimationIndex(0);
-			GuardModelAnimate.setAnimationIndex(0);
-			joystickanim = TRUE;
-		}
-		//*****************************************************************
-		//control de joystick corriendo
-		if (fabs(axes[1]) > 0.3 && fabs(axes[1]) > 0 && buttons[5] == GLFW_PRESS) {
-			modelMatrixGuard = glm::translate(modelMatrixGuard, glm::vec3(0, 0, +axes[1] * 9.5) * (float)deltaTime);
-			player.ChangeAnimationIndex(1);
-			//GuardModelAnimate.setAnimationIndex(1);
-			if (countRun == 0) {
-				run = true;
-			}
-			if (countRun == 1) {
-				run = false;
-			}
-			countRun++;
-			if (countRun >= 47) {
-				countRun = 0;
-			}
-			joystickanim = TRUE;
-		}
-		if (fabs(axes[1]) < 0.3 && fabs(axes[1]) > 0 && fabs(axes[0]) < 0.3 && fabs(axes[0]) > 0 && buttons[5] == GLFW_PRESS) {
-			modelMatrixGuard = glm::rotate(modelMatrixGuard, glm::radians(-axes[0] * 3.3f), glm::vec3(0, 1, 0) * (float)deltaTime);
-			modelMatrixGuard = glm::translate(modelMatrixGuard, glm::vec3(+axes[1] * 9.5, 0, +axes[1] * 5.5) * (float)deltaTime);
-			//player.ChangeAnimationIndex(1);
-			GuardModelAnimate.setAnimationIndex(1);
-			if (countRun == 0) {
-				run = true;
-			}
-			if (countRun == 2) {
-				run = false;
-			}
-			countRun++;
-			if (countRun >= 47) {
-				countRun = 0;
-			}
-			joystickanim = TRUE;
-		}
+		if (gameSystem.currentState == 1)
+		{
+			//*****************************************************************
+			//control de joystick caminando
+			if (fabs(axes[1]) > 0.3 && fabs(axes[1]) > 0 && buttons[5] == GLFW_RELEASE) {
+				modelMatrixGuard = glm::translate(modelMatrixGuard, glm::vec3(0, 0, +axes[1] * 5.5) * (float)deltaTime);
+				player.ChangeAnimationIndex(0);
+				//Conteo para animación caminando
+				if (countWalk == 0) {
+					walk = true;
+				}
+				if (countWalk == 2) {
+					walk = false;
+				}
+				countWalk++;
+				if (countWalk >= 40) {
+					countWalk = 0;
+				}
 
-		if (fabs(axes[0]) > 0.3 && fabs(axes[0]) > 0 && buttons[5] == GLFW_PRESS) {
-			modelMatrixGuard = glm::rotate(modelMatrixGuard, glm::radians(-axes[0] * 3.0f), glm::vec3(0, 1, 0) * (float)deltaTime);
-			//player.ChangeAnimationIndex(1);
-			GuardModelAnimate.setAnimationIndex(1);
-			joystickanim = TRUE;
+				GuardModelAnimate.setAnimationIndex(0);
+				joystickanim = TRUE;
+
+				moving = true;
+			}
+			else
+			{
+				moving = false;
+			}
+			if (fabs(axes[1]) < 0.3 && fabs(axes[1]) > 0 && fabs(axes[0]) > 0 && fabs(axes[0]) < 0.3 && buttons[5] == GLFW_RELEASE) {
+				modelMatrixGuard = glm::rotate(modelMatrixGuard, glm::radians(-axes[0] * 3.0f), glm::vec3(0, 1, 0) * (float)deltaTime);
+				modelMatrixGuard = glm::translate(modelMatrixGuard, glm::vec3(+axes[1] * 5.5, 0, +axes[1] * 5.5) * (float)deltaTime);
+				//player.ChangeAnimationIndex(0);
+				GuardModelAnimate.setAnimationIndex(0);
+				joystickanim = TRUE;
+			}
+
+			if (fabs(axes[0]) > 0.3 && fabs(axes[0]) > 0 && buttons[5] == GLFW_RELEASE) {
+				modelMatrixGuard = glm::rotate(modelMatrixGuard, glm::radians(-axes[0] * 3.0f), glm::vec3(0, 1, 0) * (float)deltaTime);
+				//player.ChangeAnimationIndex(0);
+				GuardModelAnimate.setAnimationIndex(0);
+				joystickanim = TRUE;
+			}
+			//*****************************************************************
+			//control de joystick corriendo
+			if (fabs(axes[1]) > 0.3 && fabs(axes[1]) > 0 && buttons[5] == GLFW_PRESS) {
+				modelMatrixGuard = glm::translate(modelMatrixGuard, glm::vec3(0, 0, +axes[1] * 9.5) * (float)deltaTime);
+				player.ChangeAnimationIndex(1);
+				//GuardModelAnimate.setAnimationIndex(1);
+				if (countRun == 0) {
+					run = true;
+				}
+				if (countRun == 1) {
+					run = false;
+				}
+				countRun++;
+				if (countRun >= 47) {
+					countRun = 0;
+				}
+				joystickanim = TRUE;
+
+				running = true;
+			}
+			else
+			{
+				running = false;
+			}
+
+			if (fabs(axes[1]) < 0.3 && fabs(axes[1]) > 0 && fabs(axes[0]) < 0.3 && fabs(axes[0]) > 0 && buttons[5] == GLFW_PRESS) {
+				modelMatrixGuard = glm::rotate(modelMatrixGuard, glm::radians(-axes[0] * 3.3f), glm::vec3(0, 1, 0) * (float)deltaTime);
+				modelMatrixGuard = glm::translate(modelMatrixGuard, glm::vec3(+axes[1] * 9.5, 0, +axes[1] * 5.5) * (float)deltaTime);
+				//player.ChangeAnimationIndex(1);
+				GuardModelAnimate.setAnimationIndex(1);
+				if (countRun == 0) {
+					run = true;
+				}
+				if (countRun == 2) {
+					run = false;
+				}
+				countRun++;
+				if (countRun >= 47) {
+					countRun = 0;
+				}
+				joystickanim = TRUE;
+			}
+
+			if (fabs(axes[0]) > 0.3 && fabs(axes[0]) > 0 && buttons[5] == GLFW_PRESS) {
+				modelMatrixGuard = glm::rotate(modelMatrixGuard, glm::radians(-axes[0] * 3.0f), glm::vec3(0, 1, 0) * (float)deltaTime);
+				//player.ChangeAnimationIndex(1);
+				GuardModelAnimate.setAnimationIndex(1);
+				joystickanim = TRUE;
+			}
+			//si no se mueve se pone en falso la animación
+			if (fabs(axes[0]) == 0 && fabs(axes[1]) == 0) {
+				joystickanim = FALSE;
+			}
+
+			//**************************************************************
+			//Rotación de camara en y botones X y B
+			if (buttons[0] == GLFW_PRESS) {
+
+				camera->mouseMoveCamera(0.0, offsetY + 2, deltaTime);
+			}
+			if (buttons[3] == GLFW_PRESS) {
+
+				camera->mouseMoveCamera(0.0, offsetY - 2, deltaTime);
+			}
+
+			//**************************************************************
+			//Rotación de camara en y botones Y y A
+			if (buttons[2] == GLFW_PRESS) {
+				if (distanceFromTarget >= 0.8)
+					distanceFromTarget -= 0.2;
+				camera->setDistanceFromTarget(distanceFromTarget);
+			}
+			if (buttons[1] == GLFW_PRESS) {
+				if (distanceFromTarget <= 6.0)
+					distanceFromTarget += 0.2;
+				camera->setDistanceFromTarget(distanceFromTarget);
+			}
 		}
 
 		//Para inicio de juego
@@ -938,33 +982,12 @@ bool processInput(bool continueApplication) {
 			gameSystem.EnterPress();
 			countRun = 0;
 		}
-		//si no se mueve se pone en falso la animación
-		if (fabs(axes[0]) == 0 && fabs(axes[1]) == 0) {
-			joystickanim = FALSE;
-		}
 
-		//**************************************************************
-		//Rotación de camara en y botones X y B
-		if (buttons[0] == GLFW_PRESS) {
-
-			camera->mouseMoveCamera(0.0, offsetY + 2, deltaTime);
-		}
-		if (buttons[3] == GLFW_PRESS){
-
-			camera->mouseMoveCamera(0.0, offsetY - 2, deltaTime);
-		}
-
-		//**************************************************************
-//Rotación de camara en y botones Y y A
-		if (buttons[2] == GLFW_PRESS){
-			if (distanceFromTarget >= 0.8)
-			distanceFromTarget -= 0.2;
-			camera->setDistanceFromTarget(distanceFromTarget);
-		}
-		if (buttons[1] == GLFW_PRESS) {
-			if(distanceFromTarget<=6.0)
-			distanceFromTarget += 0.2;
-			camera->setDistanceFromTarget(distanceFromTarget);
+		if (!moving && !running) {
+			walk = false;
+			countWalk = 0;
+			countRun = 0;
+			run = false;
 		}
 
 	}
@@ -1037,7 +1060,6 @@ bool processInput(bool continueApplication) {
 				countWalk = 0;
 			}
 
-
 			joystickanim = TRUE;
 		}
 
@@ -1079,14 +1101,13 @@ bool processInput(bool continueApplication) {
 			//soundwalkcount = true;
 			joystickanim = TRUE;
 		}
-		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_RELEASE && glfwGetKey(window, GLFW_KEY_W) == GLFW_RELEASE && glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE) {
+
+		if (glfwJoystickPresent(GLFW_JOYSTICK_1) == GL_FALSE && glfwGetKey(window, GLFW_KEY_S) == GLFW_RELEASE && glfwGetKey(window, GLFW_KEY_W) == GLFW_RELEASE && glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE) {
 			walk = false;
 			countWalk = 0;
 			countRun = 0;
 			run = false;
 		}
-		
-			
 	}
 
 	if (joystickanim == FALSE) {
