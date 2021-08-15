@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CGALib", "CGALib\CGALib.vcx
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "14-ProyectoFinal", "14-OpenAL\14-OpenAL.vcxproj", "{EFC2FE8A-1AC7-4969-9970-E8BA7B89127B}"
 EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Golden Maze", "Golden Maze\Golden Maze.vdproj", "{001E324C-21DE-4EEA-B8CD-2ED38DB2A2F5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -31,6 +33,10 @@ Global
 		{EFC2FE8A-1AC7-4969-9970-E8BA7B89127B}.Release|x64.Build.0 = Release|x64
 		{EFC2FE8A-1AC7-4969-9970-E8BA7B89127B}.Release|x86.ActiveCfg = Release|Win32
 		{EFC2FE8A-1AC7-4969-9970-E8BA7B89127B}.Release|x86.Build.0 = Release|Win32
+		{001E324C-21DE-4EEA-B8CD-2ED38DB2A2F5}.Debug|x64.ActiveCfg = Debug
+		{001E324C-21DE-4EEA-B8CD-2ED38DB2A2F5}.Debug|x86.ActiveCfg = Debug
+		{001E324C-21DE-4EEA-B8CD-2ED38DB2A2F5}.Release|x64.ActiveCfg = Release
+		{001E324C-21DE-4EEA-B8CD-2ED38DB2A2F5}.Release|x86.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
