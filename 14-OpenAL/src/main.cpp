@@ -80,12 +80,10 @@ std::shared_ptr<Camera> camera(new ThirdPersonCamera());
 float distanceFromTarget = 1.8;
 float distanceFromTargetOffset;
 //float Ghost;
-float rotGhost = 0.0f;
 
 Sphere skyboxSphere(20, 20);
 Box boxCollider;
 Sphere sphereCollider(10, 10);
-Cylinder cylinderRay(10, 10, 0.05, 0.05);
 
 // Guard
 Model GuardModelAnimate;
@@ -164,7 +162,6 @@ int countRun=0;
 glm::mat4 modelMatrixGuard = glm::mat4(1.0f);
 glm::vec3 targetOffset = glm::vec3(-0.35f, 1.85f, 0);
 
-int animationIndex = 0;
 int modelSelected = 0;
 bool enableCountSelected = true;
 
@@ -226,7 +223,6 @@ std::vector<bool> sourcesPlay = { false, false, true,true, true,false,false,fals
 void reshapeCallback(GLFWwindow* Window, int widthRes, int heightRes);
 void keyCallback(GLFWwindow* window, int key, int scancode, int action,int mode);
 void mouseCallback(GLFWwindow* window, double xpos, double ypos);
-void mouseButtonCallback(GLFWwindow* window, int button, int state, int mod);
 void scrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 void init(int width, int height, std::string strTitle, bool bFullScreen);
 void destroy();
@@ -273,7 +269,6 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	glfwSetWindowSizeCallback(window, reshapeCallback);
 	glfwSetKeyCallback(window, keyCallback);
 	glfwSetCursorPosCallback(window, mouseCallback);
-	glfwSetMouseButtonCallback(window, mouseButtonCallback);
 	glfwSetScrollCallback(window, scrollCallback);
 	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
 
@@ -311,9 +306,6 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	sphereCollider.setShader(&shader);
 	sphereCollider.setColor(glm::vec4(1.0, 1.0, 1.0, 1.0));
 
-	cylinderRay.init();
-	cylinderRay.setShader(&shader);
-	cylinderRay.setColor(glm::vec4(1.0, 1.0, 1.0, 1.0));
 
 	terrain.init();
 	terrain.setShader(&shaderTerrain);
@@ -361,7 +353,7 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	modelSkull2.setShader(&shaderMulLighting);
 
 
-
+	//Modelo escudo
 	modelShield2.loadModel("../models/ProyectoFinal/Shield2.fbx");
 	modelShield2.setShader(&shaderMulLighting);
 
@@ -371,8 +363,8 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	camera->setSensitivity(0.8);
 
 	modelMatrixGuard[3] = glm::vec4(mazeCellSize * floor(mazeWidth / 2), 0, mazeCellSize * floor(mazeHeight / 2), 1);
+	
 	//Vector de craneos
-
 	skulls = std::vector<Extras>{
 		Extras(&modelSkull, &terrain, glm::vec3((2 * mazeCellSize) - 0.8, 0, 1 * mazeCellSize - 2.8)),
 		Extras(&modelSkull2, &terrain, glm::vec3((2 * mazeCellSize), 0, 4 * mazeCellSize + 2.4)),
@@ -382,7 +374,6 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 		Extras(&modelSkull2, &terrain, glm::vec3((0 * mazeCellSize) - 3.2, 0, 0 * mazeCellSize - 2.4)),
 		Extras(&modelShield2, &terrain, glm::vec3((3 * mazeCellSize) - 2.2, 0.1, 3 * mazeCellSize - 2)),
 		Extras(&modelShield2, &terrain, glm::vec3((4 * mazeCellSize) + 1.5, 0.1, 4 * mazeCellSize - 3.5)),
-
 	};
 
 
@@ -698,7 +689,7 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 
 	//Sonido fondo
 	alSourcef(source[4], AL_PITCH, 1.0f);
-	alSourcef(source[4], AL_GAIN, 0.6f);
+	alSourcef(source[4], AL_GAIN, 0.3f);
 	alSourcefv(source[4], AL_POSITION, source2Pos);
 	alSourcefv(source[4], AL_VELOCITY, source2Vel);
 	alSourcei(source[4], AL_BUFFER, buffer[2]);
@@ -714,6 +705,7 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	alSourcei(source[5], AL_LOOPING, AL_FALSE);
 	alSourcef(source[5], AL_MAX_DISTANCE, 1);
 
+	//Source sonido caminando
 	alSourcef(source[6], AL_PITCH, 1.0f);
 	alSourcef(source[6], AL_GAIN, 0.4f);
 	alSourcefv(source[6], AL_POSITION, source1Pos);
@@ -722,6 +714,7 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	alSourcei(source[6], AL_LOOPING, AL_FALSE);
 	alSourcef(source[6], AL_MAX_DISTANCE, 100);
 
+	//Source sonido corriendo
 	alSourcef(source[7], AL_PITCH, 1.0f);
 	alSourcef(source[7], AL_GAIN, 0.4f);
 	alSourcefv(source[7], AL_POSITION, source1Pos);
@@ -750,9 +743,6 @@ void destroy() {
 
 	// Terrains objects Delete
 	terrain.destroy();
-
-	// Custom objects Delete
-	cylinderRay.destroy();
 
 	// Custom objects animate
 	GuardModelAnimate.destroy();
@@ -820,23 +810,6 @@ void scrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
 	if (distanceFromTarget - yoffset >= 0.8 && distanceFromTarget - yoffset <= 6.0)
 		distanceFromTarget -= yoffset;
 	camera->setDistanceFromTarget(distanceFromTarget);
-}
-
-void mouseButtonCallback(GLFWwindow* window, int button, int state, int mod) {
-	if (state == GLFW_PRESS) {
-		switch (button) {
-		case GLFW_MOUSE_BUTTON_RIGHT:
-			//std::cout << "lastMousePos.y:" << lastMousePosY << std::endl;
-			break;
-		case GLFW_MOUSE_BUTTON_LEFT:
-			//std::cout << "lastMousePos.x:" << lastMousePosX << std::endl;
-			break;
-		case GLFW_MOUSE_BUTTON_MIDDLE:
-			//std::cout << "lastMousePos.x:" << lastMousePosX << std::endl;
-			//std::cout << "lastMousePos.y:" << lastMousePosY << std::endl;
-			break;
-		}
-	}
 }
 
 bool processInput(bool continueApplication) {
@@ -1008,6 +981,7 @@ bool processInput(bool continueApplication) {
 		}
 		offsetX = 0;
 		offsetY = 0;
+
 
 		//***********************************************************************************************
 		//Control teclas de teclado
@@ -1377,21 +1351,6 @@ void applicationLoop() {
 				modelMatrixGuardBody = glm::scale(modelMatrixGuardBody, glm::vec3(0.01, 0.01, 0.01));
 				player.Render(modelMatrixGuardBody, deltaTime);
 
-				/*************************
-				* Ray in Girl direction
-				*************************
-				glm::mat4 modelMatrixRayGirl = glm::mat4(modelMatrixGuard);
-				modelMatrixRayGirl = glm::translate(modelMatrixRayGirl, glm::vec3(0.0, 1.0, 0.0));
-				glm::vec3 rayDirectionGirl = glm::normalize(glm::vec3(modelMatrixRayGirl[2]));
-				glm::vec3 oriGirl = glm::vec3(modelMatrixRayGirl[3]);
-				glm::vec3 tarGirl = oriGirl + 10.0f * rayDirectionGirl;
-				glm::vec3 tarmGirl = oriGirl + 5.0f * rayDirectionGirl;
-				modelMatrixRayGirl[3] = glm::vec4(tarmGirl, 1.0f);
-				modelMatrixRayGirl = glm::rotate(modelMatrixRayGirl, glm::radians(90.0f), glm::vec3(1.0, 0.0, 0.0));
-				modelMatrixRayGirl = glm::scale(modelMatrixRayGirl, glm::vec3(1.0, 10.0, 1.0));
-				cylinderRay.render(modelMatrixRayGirl);
-				*/
-
 				/*******************************************
 				 * Creacion de colliders
 				 * IMPORTANT do this before interpolations
@@ -1418,7 +1377,6 @@ void applicationLoop() {
 				for (int i = 0; i < ghosts.size(); i++)
 				{
 					sourcesPlay[i] = ghosts[i].UpdateGhost(&maze, deltaTime, &gameSystem);
-
 				}
 
 				for (int i = 0; i < skulls.size(); i++)
@@ -1453,38 +1411,7 @@ void applicationLoop() {
 				maze_ptr->DisplayMaze(modelNodo, modelPared, modelAntorcha, collidersOBB);
 				gameSystem.UpdateGameSystem(&player, modelText);
 				sourcesPlay[5]= gameSystem.collectedCoin;
-				/*******************************************
-				 * Render de colliders
-				 *******************************************/
-				 //for (std::map<std::string, std::tuple<AbstractModel::OBB, glm::mat4, glm::mat4> >::iterator it =
-				 //		collidersOBB.begin(); it != collidersOBB.end(); it++) {
-				 //	glm::mat4 matrixCollider = glm::mat4(1.0);
-				 //	matrixCollider = glm::translate(matrixCollider, std::get<0>(it->second).c);
-				 //	matrixCollider = matrixCollider * glm::mat4(std::get<0>(it->second).u);
-				 //	matrixCollider = glm::scale(matrixCollider, std::get<0>(it->second).e * 2.0f);
-				 //	boxCollider.setColor(glm::vec4(1.0, 1.0, 1.0, 1.0));
-				 //	boxCollider.enableWireMode();
-				 //	boxCollider.render(matrixCollider);
-				 //}
-
-				 //glm::mat4 matrixCollider = glm::mat4(1.0);
-				 //matrixCollider = glm::translate(matrixCollider, ghost.Collider().c);
-				 //matrixCollider = matrixCollider * glm::mat4(ghost.Collider().u);
-				 //matrixCollider = glm::scale(matrixCollider, ghost.Collider().e * 2.0f);
-				 //boxCollider.setColor(glm::vec4(1.0, 1.0, 1.0, 1.0));
-				 //boxCollider.enableWireMode();
-				 //boxCollider.render(matrixCollider);
-
-				 //for (std::map<std::string, std::tuple<AbstractModel::SBB, glm::mat4, glm::mat4> >::iterator it =
-				 //		collidersSBB.begin(); it != collidersSBB.end(); it++) {
-				 //	glm::mat4 matrixCollider = glm::mat4(1.0);
-				 //	matrixCollider = glm::translate(matrixCollider, std::get<0>(it->second).c);
-				 //	matrixCollider = glm::scale(matrixCollider, glm::vec3(std::get<0>(it->second).ratio * 2.0f));
-				 //	sphereCollider.setColor(glm::vec4(1.0, 1.0, 1.0, 1.0));
-				 //	sphereCollider.enableWireMode();
-				 //	sphereCollider.render(matrixCollider);
-				 //}
-
+			
 				 /*****************************************************
 				 * Test prueba de colisiones
 				 ******************************************************/
@@ -1617,30 +1544,8 @@ void applicationLoop() {
 					}
 				}
 
-				/********************************************
-				* Prueba de colision Rayo
-				********************************************
-				for (std::map<std::string, std::tuple<AbstractModel::SBB, glm::mat4, glm::mat4> >::iterator it =
-					collidersSBB.begin(); it != collidersSBB.end(); it++)
-				{
-					float tray;
-					if (raySphereIntersect(oriGirl, tarGirl, rayDirectionGirl, std::get<0>(it->second), tray))
-					{
-						//std::cout << "Collision " << it->first << " with " << "Ray" << std::endl;
-					}
-				}
-
-				for (std::map<std::string, std::tuple<AbstractModel::OBB, glm::mat4, glm::mat4> >::iterator it =
-					collidersOBB.begin(); it != collidersOBB.end(); it++)
-				{
-					if (testIntersectRayOBB(oriGirl, tarGirl, rayDirectionGirl, std::get<0>(it->second)))
-					{
-						//std::cout << "Colision " << it->first << " with " << "Ray" << std::endl;
-					}
-				}*/
-
+				
 				// Constantes de animaciones
-				animationIndex = 1;
 			}
 
 			if (gameSystem.lives == 0) {
