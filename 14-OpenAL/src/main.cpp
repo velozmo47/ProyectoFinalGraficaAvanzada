@@ -630,7 +630,7 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	alGenBuffers(NUM_BUFFERS, buffer);
 	buffer[0] = alutCreateBufferFromFile("../sounds/Auch.wav");
 	buffer[1] = alutCreateBufferFromFile("../sounds/Coins.wav");
-	buffer[2] = alutCreateBufferFromFile("../sounds/Fondo.wav");
+	buffer[2] = alutCreateBufferFromFile("../sounds/Atmosfera.wav");
 	buffer[3] = alutCreateBufferFromFile("../sounds/Ghost.wav");
 	buffer[4] = alutCreateBufferFromFile("../sounds/walk.wav");
 	buffer[5] = alutCreateBufferFromFile("../sounds/run.wav");
@@ -689,7 +689,7 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 
 	//Sonido fondo
 	alSourcef(source[4], AL_PITCH, 1.0f);
-	alSourcef(source[4], AL_GAIN, 0.3f);
+	alSourcef(source[4], AL_GAIN, 0.2f);
 	alSourcefv(source[4], AL_POSITION, source2Pos);
 	alSourcefv(source[4], AL_VELOCITY, source2Vel);
 	alSourcei(source[4], AL_BUFFER, buffer[2]);
