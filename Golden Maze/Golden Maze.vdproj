@@ -39,12 +39,6 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_073A62EF8CAE496D8A89C44826021760"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_0967A01281F148E9BB49DFA4DE1D73E9"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -76,12 +70,6 @@
         "Entry"
         {
         "MsmKey" = "8:_18DB7F07BE324DC08B2095BE821529C9"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_1A0BA517EB0E47188C612DACB56C7EEA"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -136,12 +124,6 @@
         "Entry"
         {
         "MsmKey" = "8:_2CA56EA73C46478A8F429059BDBD2124"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_314698BC48F84DA9A5D3E6B604CA16F5"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -243,12 +225,6 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_5BBFF82DC6454AC3A51868CFD747154B"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_5BD36C189FC944CBBF998B83A2C58156"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -279,19 +255,7 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_6438D03047E547EFACFD2DACB966F124"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_65E226D247D543458D381C0BF20636C4"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_6768A1D102D1493DA534E56961E9C757"
+        "MsmKey" = "8:_62B7E2418DAC4D968ACBD77082E8251D"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -321,19 +285,7 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_6A6866BD7C464F5EBAB9D65038F417EC"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_6B091BCF404C4ECBA1A1E614C62462EC"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_6BA34010A7F74ADB9E751FABDA6F5EAE"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -358,12 +310,6 @@
         "Entry"
         {
         "MsmKey" = "8:_767B4B65B9E94B4EB6FDDC06D809A84C"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_7EA403F5E07C4EB38AD5CDDA35922748"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -507,12 +453,6 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_A0B9BA244CD14234B00BBA4F67EA38F2"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_A4C5707369524C238532B5C6DFACDEC4"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -526,12 +466,6 @@
         "Entry"
         {
         "MsmKey" = "8:_A6AD27FC85AC47CCAC4E8411E52034A9"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_A6E6311170864016A463FBB122169818"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -687,19 +621,7 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_F8E2D45DE30F47019C6E7BE81B57D6BC"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_FA9E8619DD934002BA1B11943B222692"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_FF448FE44A2D4627A0EA5ED7FE0FEDAF"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -728,6 +650,14 @@
             "PrerequisitesLocation" = "2:1"
             "Url" = "8:"
             "ComponentsUrl" = "8:"
+                "Items"
+                {
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.7.2"
+                    {
+                    "Name" = "8:Microsoft .NET Framework 4.7.2 (x86 and x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.7.2"
+                    }
+                }
             }
         }
         "Release"
@@ -862,26 +792,6 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_073A62EF8CAE496D8A89C44826021760"
-            {
-            "SourcePath" = "8:..\\Textures\\container2_specular.png"
-            "TargetName" = "8:container2_specular.png"
-            "Tag" = "8:"
-            "Folder" = "8:_C35C76030A4042AE8474CBE66605618F"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_0967A01281F148E9BB49DFA4DE1D73E9"
             {
             "SourcePath" = "8:..\\Release\\CGALib.dll"
@@ -986,26 +896,6 @@
             {
             "SourcePath" = "8:..\\models\\ProyectoFinal\\Barril2.obj"
             "TargetName" = "8:Barril2.obj"
-            "Tag" = "8:"
-            "Folder" = "8:_98E8C98B9C0C45C3B8EB901E7871864E"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_1A0BA517EB0E47188C612DACB56C7EEA"
-            {
-            "SourcePath" = "8:..\\models\\ProyectoFinal\\Nodo.mtl"
-            "TargetName" = "8:Nodo.mtl"
             "Tag" = "8:"
             "Folder" = "8:_98E8C98B9C0C45C3B8EB901E7871864E"
             "Condition" = "8:"
@@ -1186,26 +1076,6 @@
             {
             "SourcePath" = "8:..\\models\\ProyectoFinal\\Grid.tga"
             "TargetName" = "8:Grid.tga"
-            "Tag" = "8:"
-            "Folder" = "8:_98E8C98B9C0C45C3B8EB901E7871864E"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_314698BC48F84DA9A5D3E6B604CA16F5"
-            {
-            "SourcePath" = "8:..\\models\\ProyectoFinal\\PasajeSur.obj"
-            "TargetName" = "8:PasajeSur.obj"
             "Tag" = "8:"
             "Folder" = "8:_98E8C98B9C0C45C3B8EB901E7871864E"
             "Condition" = "8:"
@@ -1542,26 +1412,6 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_5BBFF82DC6454AC3A51868CFD747154B"
-            {
-            "SourcePath" = "8:..\\Textures\\blendMap3.png"
-            "TargetName" = "8:blendMap3.png"
-            "Tag" = "8:"
-            "Folder" = "8:_C35C76030A4042AE8474CBE66605618F"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_5BD36C189FC944CBBF998B83A2C58156"
             {
             "SourcePath" = "8:..\\Shaders\\iluminacion_textura_animation_fog.vs"
@@ -1662,52 +1512,12 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_6438D03047E547EFACFD2DACB966F124"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_62B7E2418DAC4D968ACBD77082E8251D"
             {
-            "SourcePath" = "8:..\\models\\ProyectoFinal\\Nodo.obj"
-            "TargetName" = "8:Nodo.obj"
+            "SourcePath" = "8:..\\sounds\\Atmosfera.wav"
+            "TargetName" = "8:Atmosfera.wav"
             "Tag" = "8:"
-            "Folder" = "8:_98E8C98B9C0C45C3B8EB901E7871864E"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_65E226D247D543458D381C0BF20636C4"
-            {
-            "SourcePath" = "8:..\\Textures\\blendMap.png"
-            "TargetName" = "8:blendMap.png"
-            "Tag" = "8:"
-            "Folder" = "8:_C35C76030A4042AE8474CBE66605618F"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_6768A1D102D1493DA534E56961E9C757"
-            {
-            "SourcePath" = "8:..\\models\\ProyectoFinal\\modelPared.obj"
-            "TargetName" = "8:modelPared.obj"
-            "Tag" = "8:"
-            "Folder" = "8:_98E8C98B9C0C45C3B8EB901E7871864E"
+            "Folder" = "8:_E5FE3390C9824E68BD7FBC7C93DCCCB1"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -1802,52 +1612,12 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_6A6866BD7C464F5EBAB9D65038F417EC"
-            {
-            "SourcePath" = "8:..\\models\\ProyectoFinal\\modelCell.mtl"
-            "TargetName" = "8:modelCell.mtl"
-            "Tag" = "8:"
-            "Folder" = "8:_98E8C98B9C0C45C3B8EB901E7871864E"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_6B091BCF404C4ECBA1A1E614C62462EC"
             {
             "SourcePath" = "8:..\\models\\ProyectoFinal\\Guard_02__normal.png"
             "TargetName" = "8:Guard_02__normal.png"
             "Tag" = "8:"
             "Folder" = "8:_98E8C98B9C0C45C3B8EB901E7871864E"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_6BA34010A7F74ADB9E751FABDA6F5EAE"
-            {
-            "SourcePath" = "8:..\\Textures\\container2.png"
-            "TargetName" = "8:container2.png"
-            "Tag" = "8:"
-            "Folder" = "8:_C35C76030A4042AE8474CBE66605618F"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -1928,26 +1698,6 @@
             "TargetName" = "8:terrain_shadow.vs"
             "Tag" = "8:"
             "Folder" = "8:_10F82F48EC3F479EB490103319EB0B05"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_7EA403F5E07C4EB38AD5CDDA35922748"
-            {
-            "SourcePath" = "8:..\\models\\ProyectoFinal\\PasajeSur.mtl"
-            "TargetName" = "8:PasajeSur.mtl"
-            "Tag" = "8:"
-            "Folder" = "8:_98E8C98B9C0C45C3B8EB901E7871864E"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -2422,26 +2172,6 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_A0B9BA244CD14234B00BBA4F67EA38F2"
-            {
-            "SourcePath" = "8:..\\models\\ProyectoFinal\\modelPared.mtl"
-            "TargetName" = "8:modelPared.mtl"
-            "Tag" = "8:"
-            "Folder" = "8:_98E8C98B9C0C45C3B8EB901E7871864E"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_A4C5707369524C238532B5C6DFACDEC4"
             {
             "SourcePath" = "8:..\\Textures\\Rock.tif"
@@ -2488,26 +2218,6 @@
             "TargetName" = "8:glew32d.dll"
             "Tag" = "8:"
             "Folder" = "8:_4E53C21193504183B68EC87724E28DB4"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_A6E6311170864016A463FBB122169818"
-            {
-            "SourcePath" = "8:..\\models\\ProyectoFinal\\modelCell.obj"
-            "TargetName" = "8:modelCell.obj"
-            "Tag" = "8:"
-            "Folder" = "8:_98E8C98B9C0C45C3B8EB901E7871864E"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -3002,52 +2712,12 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_F8E2D45DE30F47019C6E7BE81B57D6BC"
-            {
-            "SourcePath" = "8:..\\models\\ProyectoFinal\\PasajeEste.mtl"
-            "TargetName" = "8:PasajeEste.mtl"
-            "Tag" = "8:"
-            "Folder" = "8:_98E8C98B9C0C45C3B8EB901E7871864E"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_FA9E8619DD934002BA1B11943B222692"
             {
             "SourcePath" = "8:..\\Shaders\\depthTesting.fs"
             "TargetName" = "8:depthTesting.fs"
             "Tag" = "8:"
             "Folder" = "8:_10F82F48EC3F479EB490103319EB0B05"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_FF448FE44A2D4627A0EA5ED7FE0FEDAF"
-            {
-            "SourcePath" = "8:..\\models\\ProyectoFinal\\PasajeEste.obj"
-            "TargetName" = "8:PasajeEste.obj"
-            "Tag" = "8:"
-            "Folder" = "8:_98E8C98B9C0C45C3B8EB901E7871864E"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -3240,7 +2910,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Golden Maze"
         "ProductCode" = "8:{35FE3E2D-3380-4DA9-ABC7-76D537E557DE}"
-        "PackageCode" = "8:{E3DFC595-7ACC-4E41-A597-EE9D445E45FF}"
+        "PackageCode" = "8:{E8E676F9-905A-4715-8F33-70DD76D57565}"
         "UpgradeCode" = "8:{B3F4A0A2-B345-4F41-971A-FE46B782B18F}"
         "AspNetVersion" = "8:2.0.50727.0"
         "RestartWWWService" = "11:FALSE"
